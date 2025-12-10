@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Launching OneQA...</title>
+  <script>
+    function getParam(name) {
+      return new URLSearchParams(window.location.search).get(name) || '';
+    }
+
+    const asset = getParam('asset');
+
+    const pronkUrl =
+      'pronk://devtype' +
+      '?asset=' + encodeURIComponent(asset) +
+      '&output=json' +
+      '&callback=Openerapp%3A%2F%2Fresult%2F' +
+      '&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+
+    window.location.href = pronkUrl;
+  </script>
+</head>
+<body>
+  <p>Launching OneQA…</p>
+</body>
+</html>
