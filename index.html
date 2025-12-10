@@ -2,25 +2,39 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Launching OneQA...</title>
+  <title>Pronk Mobilize</title>
   <script>
+    // Function to read any query string parameter from TMS
     function getParam(name) {
       return new URLSearchParams(window.location.search).get(name) || '';
     }
 
-    const asset = getParam('asset');
+    // Capture all TMS fields dynamically
+    const params = new URLSearchParams(window.location.search);
+    const queryParams = [];
+    for (const [key, value] of params.entries()) {
+      // Skip 'autotest' if accidentally passed from TMS
+      if (key.toLowerCase() !== 'autotest') {
+        queryParams.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+      }
+    }
 
-    const pronkUrl =
-      'pronk://devtype' +
-      '?asset=' + encodeURIComponent(asset) +
-      '&output=json' +
-      '&callback=Openerapp%3A%2F%2Fresult%2F' +
-      '&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+    // Base pronk URL
+    const pronkBase = 'pronk://devtype';
 
+    // Fixed autotest block (as required)
+    const autotestBlock = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+
+    // Combine everything into final deep link
+    let pronkUrl = pronkBase + '?' + queryParams.join('&');
+    pronkUrl += (queryParams.length > 0 ? '&' : '') + 'autotest=' + autotestBlock;
+
+    // Automatically launch Pronk Mobilize
     window.location.href = pronkUrl;
   </script>
 </head>
 <body>
-  <p>Launching Pronk Mobilize</p>
+  <p>Launching Pronk Mobilize…</p>
 </body>
 </html>
+
