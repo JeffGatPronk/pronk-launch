@@ -4,14 +4,15 @@
   <meta charset="utf-8">
   <title>Pronk Mobilize</title>
   <style>
-    body { font-family: sans-serif; }
-    #manualLaunch { display: none; margin-top: 1em; }
-    #launchButton { padding: 10px 20px; font-size: 16px; }
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    #launchButton { padding: 20px 40px; font-size: 18px; background-color: #0078D7; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    #launchButton:hover { background-color: #005a9e; }
+    #manualLaunch { display: none; margin-top: 20px; font-size: 16px; }
   </style>
 </head>
 <body>
-  <h2>Launching Pronk Mobilize…</h2>
-  <p>If nothing happens automatically, click the button below:</p>
+  <h2>Pronk Mobilize Launcher</h2>
+  <p>The test should launch automatically. If not, click the button below:</p>
 
   <button id="launchButton">Launch Pronk Mobilize</button>
 
@@ -21,45 +22,45 @@
   </div>
 
   <script>
-    // Get asset from TMS query string
     const params = new URLSearchParams(window.location.search);
-    const asset =
-      params.get("asset") ||
-      params.get("assetid") ||
-      params.get("asset_number") ||
-      "t1234";
 
-    // Raw Pronk Mobilize URL (no encoding)
+    // Get asset from TMS, fallback to t1234
+    let asset = (params.get("asset") || params.get("assetid") || params.get("asset_number") || "t1234").trim();
+    asset = asset.replace(/[^a-zA-Z0-9]/g,''); // letters and numbers only
+
+    // Raw Pronk Mobilize URL
     const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
     // Assign manual fallback link
     const fallback = document.getElementById('fallbackLink');
     fallback.href = pronkUrl;
 
-    // Function to simulate a user click (required for Windows Chrome/Edge)
-    function launchPronk() {
-      const a = document.createElement('a');
-      a.href = pronkUrl;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click(); // true user gesture
-      setTimeout(() => window.close(), 600); // auto-close redirect tab
-    }
+    // Assign visible button click
+    const btn = document.getElementById('launchButton');
+    btn.onclick = function() {
+      window.location.href = pronkUrl;
+    };
 
-    // Auto-launch when page loads
-    window.onload = function() {
-      // Also assign the visible button
-      const btn = document.getElementById('launchButton');
-      btn.onclick = launchPronk;
+    // Attempt auto-launch using tiny iframe
+    function attemptAutoLaunch() {
+      const iframe = document.createElement('iframe');
+      iframe.style.width = "1px";
+      iframe.style.height = "1px";
+      iframe.style.border = "none";
+      iframe.src = pronkUrl;
+      document.body.appendChild(iframe);
 
-      // Simulate click automatically
-      launchPronk();
-
-      // Show manual fallback after short delay if blocked
+      // Show fallback button after short delay
       setTimeout(() => {
         document.getElementById('manualLaunch').style.display = 'block';
       }, 1000);
+    }
+
+    window.onload = function() {
+      attemptAutoLaunch();
     };
+
+    console.log("Pronk URL:", pronkUrl);
   </script>
 </body>
 </html>
