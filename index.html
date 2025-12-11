@@ -2,49 +2,75 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Pronk Mobilize Invisible Launcher</title>
+  <title>Pronk Mobilize Launcher</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    #launchButton {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #launchButton:hover { background-color: #005a9e; }
+    #message { font-size: 14px; margin-bottom: 20px; }
+  </style>
 </head>
 <body>
-<script>
-  // --- Helper to get TMS query parameters ---
-  function getParam(name) {
-    const q = window.location.search.substring(1);
-    const pairs = q.split('&');
-    for (const pair of pairs) {
-      const [key, ...rest] = pair.split('=');
-      if (decodeURIComponent(key).trim() === name) {
-        return decodeURIComponent(rest.join('=')).trim();
+  <div id="message">Launching Pronk Mobilize… Press the button if nothing happens.</div>
+  <button id="launchButton">Launch</button>
+
+  <script>
+    // --- Helper to get TMS parameters ---
+    function getParam(name) {
+      const q = window.location.search.substring(1);
+      const pairs = q.split('&');
+      for (const pair of pairs) {
+        const [key, ...rest] = pair.split('=');
+        if (decodeURIComponent(key).trim() === name) {
+          return decodeURIComponent(rest.join('=')).trim();
+        }
+      }
+      return null;
+    }
+
+    // --- Get Asset from TMS ---
+    const asset =
+      getParam("Asset ID") ||
+      getParam("AssetID") ||
+      getParam("assetid") ||
+      getParam("asset_number") ||
+      "t1234";
+
+    // --- Literal autotest block ---
+    const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+
+    // --- Build Pronk URL ---
+    const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest=${autotest}`;
+
+    // --- Launch function ---
+    function launchPronk() {
+      try {
+        const tempWin = window.open(pronkUrl, "_blank"); // Launch Mobilize
+        if (tempWin) tempWin.close();                   // Attempt auto-close
+        setTimeout(() => { try { window.close(); } catch(e) {} }, 300); // Fallback
+      } catch (e) {
+        console.error("Launch failed:", e);
       }
     }
-    return null;
-  }
 
-  // --- Dynamic Asset from TMS ---
-  const asset =
-    getParam("Asset ID") ||
-    getParam("AssetID") ||
-    getParam("assetid") ||
-    getParam("asset_number") ||
-    "t1234";
+    // --- Bind button ---
+    const btn = document.getElementById('launchButton');
+    btn.onclick = launchPronk;
 
-  // --- Literal autotest block ---
-  const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+    // --- Optional: auto-click button on load to minimize user interaction ---
+    window.onload = function() {
+      setTimeout(() => { btn.click(); }, 100); // auto-launch after short delay
+    };
 
-  // --- Build Pronk URL ---
-  const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest=${autotest}`;
-
-  console.log("Launching Mobilize:", pronkUrl);
-
-  // --- Launch Mobilize via invisible window ---
-  try {
-    const tempWin = window.open(pronkUrl, "_blank"); // triggers Mobilize
-    if (tempWin) tempWin.close(); // auto-close immediately
-  } catch(e) {
-    console.error("Mobilize launch failed:", e);
-  }
-
-  // --- Auto-close launcher window if possible ---
-  setTimeout(() => { try { window.close(); } catch(e) {} }, 500);
-</script>
+    console.log("Pronk URL:", pronkUrl);
+  </script>
 </body>
 </html>
