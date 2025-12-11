@@ -24,31 +24,29 @@
   <script>
     const params = new URLSearchParams(window.location.search);
 
-    // Use TMS-provided Asset ID
+    // Read Asset ID from TMS (parameter name has a space)
     let asset = (
-      params.get("AssetID") ||   // TMS field with exact casing
-      params.get("assetid") ||   // fallback lowercase
+      params.get("Asset ID") ||   // TMS query field with space
+      params.get("AssetID") ||    // fallback without space
+      params.get("assetid") || 
       params.get("asset_number") || 
-      "t1234"                    // fallback if missing
-    ).trim();
+      "t1234"
+    ).trim(); // Trim whitespace
 
-    // Sanitize: only letters and numbers
-    asset = asset.replace(/[^a-zA-Z0-9]/g,'');
-
-    // Build raw Pronk Mobilize URL
+    // Build raw Pronk Mobilize URL (no encoding)
     const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
-    // Assign manual fallback link
+    // Manual fallback link
     const fallback = document.getElementById('fallbackLink');
     fallback.href = pronkUrl;
 
-    // Assign visible button click
+    // Button click
     const btn = document.getElementById('launchButton');
     btn.onclick = function() {
       window.location.href = pronkUrl;
     };
 
-    // Auto-launch attempt using tiny iframe
+    // Attempt auto-launch using tiny iframe
     function attemptAutoLaunch() {
       const iframe = document.createElement('iframe');
       iframe.style.width = "1px";
@@ -57,7 +55,7 @@
       iframe.src = pronkUrl;
       document.body.appendChild(iframe);
 
-      // Show fallback button after short delay
+      // Show fallback if blocked
       setTimeout(() => {
         document.getElementById('manualLaunch').style.display = 'block';
       }, 1000);
