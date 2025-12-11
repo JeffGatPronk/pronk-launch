@@ -43,10 +43,10 @@
       return null;
     }
 
-    // --- URL scheme always "devtype" ---
+    // --- URL scheme must be devtype ---
     const deviceType = "devtype";
 
-    // --- Get asset number from TMS ---
+    // --- Get asset from TMS ---
     const asset =
       getParam("Asset ID") ||
       getParam("AssetID") ||
@@ -90,7 +90,6 @@
     // --- Auto-launch on page load ---
     window.onload = launchPronk;
 
-    // --- Debug log ---
     console.log("Pronk URL:", pronkUrl);
   </script>
 </body>
