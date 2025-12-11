@@ -5,15 +5,7 @@
   <title>Pronk Mobilize</title>
   <style>
     body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    #launchButton {
-      padding: 20px 40px;
-      font-size: 18px;
-      background-color: #0078D7;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+    #launchButton { padding: 20px 40px; font-size: 18px; background-color: #0078D7; color: white; border: none; border-radius: 8px; cursor: pointer; }
     #launchButton:hover { background-color: #005a9e; }
     #manualLaunch { display: none; margin-top: 20px; font-size: 16px; }
   </style>
@@ -30,7 +22,7 @@
   </div>
 
   <script>
-    // Reliable query parameter parser (handles spaces in name)
+    // Helper to reliably get query parameter (works with spaces in the name)
     function getQueryParam(name) {
       const query = window.location.search.substring(1);
       const pairs = query.split("&");
@@ -43,29 +35,28 @@
       return null;
     }
 
-    // Get Asset ID from TMS
+    // Get Asset ID from TMS (space in field name is possible)
     let asset =
-      getQueryParam("Asset ID") ||
+      getQueryParam("Asset ID") ||  // exact TMS field name
       getQueryParam("AssetID") ||
       getQueryParam("assetid") ||
       getQueryParam("asset_number") ||
-      "t1234";
+      "t1234"; // fallback
 
-    // Build Pronk Mobilize URL (no output=json)
+    // Build raw Pronk Mobilize URL (no output=json)
     const pronkUrl = `pronk://devtype?asset=${asset}&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
-    // Assign manual fallback link
+    // Manual fallback link
     const fallback = document.getElementById('fallbackLink');
     fallback.href = pronkUrl;
 
-    // Button click
+    // Assign button click
     const btn = document.getElementById('launchButton');
     btn.onclick = function() {
       window.location.href = pronkUrl;
-      setTimeout(() => { try { window.close(); } catch(e) {} }, 1000);
     };
 
-    // Auto-launch using tiny iframe with auto-close
+    // Auto-launch using tiny iframe
     function attemptAutoLaunch() {
       const iframe = document.createElement('iframe');
       iframe.style.width = "1px";
@@ -74,14 +65,9 @@
       iframe.src = pronkUrl;
       document.body.appendChild(iframe);
 
-      // Attempt to auto-close window
+      // Show manual fallback if blocked
       setTimeout(() => {
-        try {
-          window.close();
-        } catch (e) {
-          // If blocked, show fallback button
-          document.getElementById('manualLaunch').style.display = 'block';
-        }
+        document.getElementById('manualLaunch').style.display = 'block';
       }, 1000);
     }
 
