@@ -1,107 +1,94 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8"/>
-  <title>Pronk Mobilize Debug Launcher</title>
+  <meta charset="utf-8">
+  <title>Pronk Mobilize Launcher</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    pre { background:#f4f4f4; padding:10px; border-radius:6px; overflow:auto; }
-    .warn { color: #b33; font-weight:700; }
-    #controls { margin-top:16px; }
-    button { padding:10px 14px; font-size:16px; }
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    #launchButton {
+      padding: 20px 40px;
+      font-size: 18px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #launchButton:hover { background-color: #005a9e; }
+    #manualLaunch { display: none; margin-top: 20px; font-size: 16px; }
   </style>
 </head>
 <body>
-  <h2>Pronk Mobilize Debug Launcher</h2>
-  <p>This page will build the <code>pronk://</code> URL exactly as it will be launched and attempt navigation. If you get a URL error, copy the printed URL and paste it into the browser address bar to see whether the URL itself is invalid.</p>
+  <h2>Pronk Mobilize Launcher</h2>
+  <p>The test should launch automatically. If not, click the button below:</p>
 
-  <div>
-    <strong>Built URL:</strong>
-    <pre id="urlBox">(building...)</pre>
+  <button id="launchButton">Launch Pronk Mobilize</button>
+
+  <div id="manualLaunch">
+    <p>Manual fallback:</p>
+    <a id="fallbackLink" href="#" target="_blank">Launch Pronk Mobilize</a>
   </div>
-
-  <div id="controls">
-    <button id="goBtn">Open Pronk (navigate)</button>
-    <button id="copyBtn">Copy URL</button>
-  </div>
-
-  <p id="status"></p>
 
   <script>
-    // ------- helpers -------
-    function getRawParam(name) {
-      // manual parser to handle param names containing spaces like "Asset ID"
+    // --- Helper to get TMS query parameter (handles spaces in field names) ---
+    function getParam(name) {
       const q = window.location.search.substring(1);
-      if (!q) return null;
-      const parts = q.split('&');
-      for (let p of parts) {
-        const kv = p.split('=');
-        const k = decodeURIComponent(kv[0]||'').trim();
-        const v = decodeURIComponent(kv.slice(1).join('=')||'').trim();
-        if (k === name) return v;
+      const pairs = q.split('&');
+      for (const pair of pairs) {
+        const [key, ...rest] = pair.split('=');
+        if (decodeURIComponent(key).trim() === name) {
+          return decodeURIComponent(rest.join('=')).trim();
+        }
       }
       return null;
     }
 
-    function first(...names) {
-      for (const n of names) {
-        const v = getRawParam(n);
-        if (v) return v;
-      }
-      return null;
-    }
+    // --- Force correct device type ---
+    const deviceType = "NFPA992012APwGND";
 
-    // ------- build url (NO autotest encoding) -------
-    const deviceType = "NFPA992012APwGND"; // <<< REPLACE with the exact device type that worked for you previously
-    const asset = first("Asset ID","AssetID","assetid","asset_number") || "t1234";
+    // --- Get asset from TMS, fallback to t1234 ---
+    const asset =
+      getParam("Asset ID") ||
+      getParam("AssetID") ||
+      getParam("assetid") ||
+      getParam("asset_number") ||
+      "t1234";
 
-    // literal autotest block (must remain exactly like this)
+    // --- Build Pronk Mobilize URL (literal autotest) ---
     const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+    const pronkUrl = `pronk://${deviceType}?asset=${asset}&autotest=${autotest}`;
 
-    const pronkUrl = `pronk://${deviceType}?asset=${asset}&output=json&autotest=${autotest}`;
+    // --- Assign manual fallback link ---
+    const fallback = document.getElementById('fallbackLink');
+    fallback.href = pronkUrl;
 
-    // show on page
-    document.getElementById('urlBox').textContent = pronkUrl;
+    // --- Auto-launch function ---
+    function launchPronk() {
+      try {
+        window.location.href = pronkUrl;  // Reliable method
+      } catch (e) {
+        console.error("Launch failed:", e);
+      }
 
-    // status helper
-    const status = document.getElementById('status');
-    function setStatus(msg, isErr=false) {
-      status.textContent = msg;
-      status.className = isErr ? "warn" : "";
+      // Attempt to auto-close
+      setTimeout(() => { try { window.close(); } catch(e) {} }, 200);
+      setTimeout(() => { try { window.close(); } catch(e) {} }, 600);
+
+      // Show manual fallback if still open
+      setTimeout(() => {
+        if (!window.closed) {
+          document.getElementById('manualLaunch').style.display = 'block';
+        }
+      }, 1200);
     }
 
-    // open handler
-    document.getElementById('goBtn').addEventListener('click', () => {
-      setStatus('Attempting to open Mobilize...');
-      try {
-        // direct navigation - this is the reliable method
-        window.location.href = pronkUrl;
-      } catch (e) {
-        setStatus('Navigation failed: ' + (e.message||e), true);
-      }
-    });
+    // --- Bind button ---
+    document.getElementById('launchButton').onclick = launchPronk;
 
-    // copy handler
-    document.getElementById('copyBtn').addEventListener('click', () => {
-      navigator.clipboard?.writeText(pronkUrl).then(() => {
-        setStatus('URL copied to clipboard.');
-      }, () => {
-        setStatus('Copy failed — highlight and copy the URL above manually.', true);
-      });
-    });
+    // --- Auto-launch on page load ---
+    window.onload = launchPronk;
 
-    // Auto-attempt on load (but leaves URL visible)
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        setStatus('Auto-attempting open in 300ms... (URL printed above)');
-        setTimeout(() => { try { window.location.href = pronkUrl; } catch(e) {} }, 300);
-      }, 200);
-    });
-
-    // Console log
-    console.log("Built pronk URL:", pronkUrl);
+    console.log("Pronk URL:", pronkUrl);
   </script>
 </body>
-</html>
-
 </html>
