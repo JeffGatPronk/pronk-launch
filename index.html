@@ -43,7 +43,7 @@
       return null;
     }
 
-    // --- Dynamic asset from TMS ---
+    // --- Dynamic Asset from TMS ---
     const asset =
       getParam("Asset ID") ||
       getParam("AssetID") ||
@@ -54,44 +54,42 @@
     // --- Literal autotest block ---
     const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-    // Build final Pronk URL
+    // --- Build Pronk URL ---
     const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest=${autotest}`;
 
-    // --- Assign manual fallback link ---
+    // --- Manual fallback link ---
     const fallback = document.getElementById('fallbackLink');
     fallback.href = pronkUrl;
 
-    // --- Launch function (reliable on Windows browsers) ---
+    // --- Reliable launch function ---
     function launchPronk() {
       try {
-        // Use a temporary window to trigger the custom protocol
+        // Open a temporary window to trigger the custom protocol
         const tempWin = window.open(pronkUrl, "_blank");
-        if (tempWin) tempWin.close();  // Attempt to auto-close
-      } catch(e) {
+        if (tempWin) tempWin.close(); // Auto-close
+      } catch (e) {
         console.error("Launch failed:", e);
       }
 
-      // Fallback: show manual link if still open
+      // Auto-close launcher window
+      setTimeout(() => { try { window.close(); } catch(e) {} }, 500);
+
+      // Show fallback if still open
       setTimeout(() => {
         if (!window.closed) {
           document.getElementById('manualLaunch').style.display = 'block';
         }
       }, 1200);
-
-      // Attempt to close the launcher window
-      setTimeout(() => { try { window.close(); } catch(e) {} }, 500);
     }
 
-    // --- Bind launch button ---
+    // --- Bind button ---
     document.getElementById('launchButton').onclick = launchPronk;
 
-    // --- Auto-launch after short delay to ensure user gesture ---
+    // --- Auto-launch after short delay to ensure browser allows user gesture ---
     window.onload = function() {
-      // Some browsers block immediate auto-launch without user interaction
-      // We can attempt a delayed auto-click to trigger the protocol
       setTimeout(() => {
         launchPronk();
-      }, 200);
+      }, 200); // 200ms delay ensures browsers like Chrome/Edge register the protocol
     };
 
     console.log("Pronk URL:", pronkUrl);
