@@ -21,7 +21,7 @@
   </div>
 
   <script>
-    // Query parameter parser (handles spaces in name)
+    // Simple query parameter parser
     function getQueryParam(name) {
       const query = window.location.search.substring(1);
       const pairs = query.split("&");
@@ -41,14 +41,11 @@
       throw new Error("Asset ID missing");
     }
 
-    // Encode asset safely for URL
-    let safeAsset = encodeURIComponent(asset);
+    // Use exact device type from your working static URL
+    const deviceType = "NFPA9"; // <-- replace with your actual device type
 
-    // Replace with your actual working device type
-    const deviceType = "NFPA9";  
-
-    // Build Mobilize URL
-    const pronkUrl = `pronk://${deviceType}?asset=${safeAsset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
+    // Build Pronk Mobilize URL exactly like the working static URL
+    const pronkUrl = `pronk://${deviceType}?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
     // Assign manual fallback link
     const fallback = document.getElementById('fallbackLink');
@@ -65,7 +62,6 @@
     // Try auto-close after 1s
     setTimeout(() => {
       try { window.close(); } catch(e) {
-        // If blocked, show fallback
         document.getElementById('manualLaunch').style.display = 'block';
       }
     }, 1000);
@@ -74,3 +70,4 @@
   </script>
 </body>
 </html>
+
