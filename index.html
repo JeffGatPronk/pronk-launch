@@ -3,38 +3,51 @@
 <head>
   <meta charset="utf-8">
   <title>Pronk Mobilize</title>
-  <script>
-    // Function to read any query string parameter from TMS
-    function getParam(name) {
-      return new URLSearchParams(window.location.search).get(name) || '';
-    }
 
-    // Capture all TMS fields dynamically
+  <script>
+    // Read all TMS parameters dynamically
     const params = new URLSearchParams(window.location.search);
-    const queryParams = [];
+
+    // Build dynamic portion from TMS
+    const passthrough = [];
     for (const [key, value] of params.entries()) {
-      // Skip 'autotest' if accidentally passed from TMS
-      if (key.toLowerCase() !== 'autotest') {
-        queryParams.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+      if (key.toLowerCase() !== "autotest") {
+        passthrough.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
       }
     }
 
-    // Base pronk URL
-    const pronkBase = 'pronk://devtype?asset=t1234';
+    // Required fixed autotest block
+    const autotestBlock =
+      '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-    // Fixed autotest block (as required)
-    const autotestBlock = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+    // Final deep link for Pronk Mobilize
+    let pronkUrl = "pronk://devtype";
+    if (passthrough.length > 0) {
+      pronkUrl += "?" + passthrough.join("&") + "&autotest=" + autotestBlock;
+    } else {
+      pronkUrl += "?autotest=" + autotestBlock;
+    }
 
-    // Combine everything into final deep link
-    let pronkUrl = pronkBase + '?' + queryParams.join('&');
-    pronkUrl += (queryParams.length > 0 ? '&' : '') + 'autotest=' + autotestBlock;
+    // Trigger the deep link via a user-click simulation
+    function launch() {
+      const a = document.createElement('a');
+      a.href = pronkUrl;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();  // Browser counts this as a user gesture → Pronk launches
+    }
 
-    // Automatically launch Pronk Mobilize
-    window.location.href = pronkUrl;
+    // Launch as soon as the page is ready
+    window.onload = function () {
+      launch();
+
+      // Auto-close the window (TMS popup goes away)
+      setTimeout(() => window.close(), 600);
+    };
   </script>
+
 </head>
 <body>
-  <p>Launching Pronk Mobilize…</p>
+  <p style="font-family: sans-serif;">Launching Pronk Mobilize…</p>
 </body>
 </html>
-
