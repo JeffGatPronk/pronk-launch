@@ -44,7 +44,7 @@
     // Use exact device type from your working static URL
     const deviceType = "NFPA9"; // <-- replace with your actual device type
 
-    // Build Pronk Mobilize URL exactly like the working static URL
+    // Build Mobilize URL (autotest literal, NO encoding)
     const pronkUrl = `pronk://${deviceType}?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
     // Assign manual fallback link
@@ -62,6 +62,7 @@
     // Try auto-close after 1s
     setTimeout(() => {
       try { window.close(); } catch(e) {
+        // If blocked, show fallback
         document.getElementById('manualLaunch').style.display = 'block';
       }
     }, 1000);
@@ -70,4 +71,3 @@
   </script>
 </body>
 </html>
-
