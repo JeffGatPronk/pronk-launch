@@ -2,49 +2,97 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Pronk Mobilize Invisible Launcher</title>
+  <title>Pronk Mobilize Launcher</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    #launchButton {
+      padding: 20px 40px;
+      font-size: 18px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #launchButton:hover { background-color: #005a9e; }
+    #manualLaunch { display: none; margin-top: 20px; font-size: 16px; }
+  </style>
 </head>
 <body>
-<script>
-  // --- Helper to get TMS query parameters ---
-  function getParam(name) {
-    const q = window.location.search.substring(1);
-    const pairs = q.split('&');
-    for (const pair of pairs) {
-      const [key, ...rest] = pair.split('=');
-      if (decodeURIComponent(key).trim() === name) {
-        return decodeURIComponent(rest.join('=')).trim();
+  <h2>Pronk Mobilize Launcher</h2>
+  <p>The test should launch automatically. If not, click the button below:</p>
+
+  <button id="launchButton">Launch Pronk Mobilize</button>
+
+  <div id="manualLaunch">
+    <p>Manual fallback:</p>
+    <a id="fallbackLink" href="#" target="_blank">Launch Pronk Mobilize</a>
+  </div>
+
+  <script>
+    // --- Helper to get TMS query parameters ---
+    function getParam(name) {
+      const q = window.location.search.substring(1);
+      const pairs = q.split('&');
+      for (const pair of pairs) {
+        const [key, ...rest] = pair.split('=');
+        if (decodeURIComponent(key).trim() === name) {
+          return decodeURIComponent(rest.join('=')).trim();
+        }
+      }
+      return null;
+    }
+
+    // --- Dynamic Asset ---
+    const asset =
+      getParam("Asset ID") ||
+      getParam("AssetID") ||
+      getParam("assetid") ||
+      getParam("asset_number") ||
+      "t1234";
+
+    // --- Literal autotest block ---
+    const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+
+    // --- Build Pronk URL ---
+    const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest=${autotest}`;
+
+    // --- Manual fallback link ---
+    const fallback = document.getElementById('fallbackLink');
+    fallback.href = pronkUrl;
+
+    // --- Launch function (reliable) ---
+    function launchPronk() {
+      try {
+        // Open temporary window to trigger custom protocol
+        const tempWin = window.open(pronkUrl, "_blank");
+        if (tempWin) tempWin.close(); // attempt to auto-close
+
+        // Close launcher window after short delay
+        setTimeout(() => { try { window.close(); } catch(e) {} }, 500);
+
+        // Show fallback if still open
+        setTimeout(() => {
+          if (!window.closed) {
+            document.getElementById('manualLaunch').style.display = 'block';
+          }
+        }, 1200);
+
+      } catch(e) {
+        console.error("Launch failed:", e);
+        document.getElementById('manualLaunch').style.display = 'block';
       }
     }
-    return null;
-  }
 
-  // --- Dynamic Asset from TMS ---
-  const asset =
-    getParam("Asset ID") ||
-    getParam("AssetID") ||
-    getParam("assetid") ||
-    getParam("asset_number") ||
-    "t1234";
+    // --- Bind button ---
+    document.getElementById('launchButton').onclick = launchPronk;
 
-  // --- Literal autotest block ---
-  const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+    // --- Auto-launch on page load ---
+    window.onload = function() {
+      setTimeout(launchPronk, 200); // small delay helps Chrome/Edge register the click
+    };
 
-  // --- Build Pronk URL ---
-  const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest=${autotest}`;
-
-  console.log("Launching Mobilize:", pronkUrl);
-
-  // --- Launch Mobilize via invisible window ---
-  try {
-    const tempWin = window.open(pronkUrl, "_blank"); // triggers Mobilize
-    if (tempWin) tempWin.close(); // auto-close immediately
-  } catch(e) {
-    console.error("Mobilize launch failed:", e);
-  }
-
-  // --- Auto-close launcher window if possible ---
-  setTimeout(() => { try { window.close(); } catch(e) {} }, 500);
-</script>
+    console.log("Pronk URL:", pronkUrl);
+  </script>
 </body>
 </html>
