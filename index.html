@@ -21,7 +21,7 @@
   </div>
 
   <script>
-    // Reliable query parameter parser (handles spaces in name)
+    // Query parameter parser (handles spaces in name)
     function getQueryParam(name) {
       const query = window.location.search.substring(1);
       const pairs = query.split("&");
@@ -34,28 +34,27 @@
       return null;
     }
 
-    // Get Asset ID from TMS
-    let asset =
-      getQueryParam("Asset ID") ||
-      getQueryParam("AssetID") ||
-      getQueryParam("assetid") ||
-      getQueryParam("asset_number") ||
-      "t1234";
+    // Get Asset ID from TMS (required)
+    let asset = getQueryParam("Asset ID");
+    if (!asset) {
+      alert("Error: Asset ID is required from TMS.");
+      throw new Error("Asset ID missing");
+    }
 
-    // Encode asset safely
+    // Encode asset safely for URL
     let safeAsset = encodeURIComponent(asset);
 
-    // Replace with your actual device type from the working static URL
+    // Replace with your actual working device type
     const deviceType = "NFPA9";  
 
-    // Build Pronk Mobilize URL
+    // Build Mobilize URL
     const pronkUrl = `pronk://${deviceType}?asset=${safeAsset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
     // Assign manual fallback link
     const fallback = document.getElementById('fallbackLink');
     fallback.href = pronkUrl;
 
-    // Auto-launch via tiny iframe
+    // Auto-launch via tiny invisible iframe
     const iframe = document.createElement('iframe');
     iframe.style.width = "1px";
     iframe.style.height = "1px";
@@ -63,7 +62,7 @@
     iframe.src = pronkUrl;
     document.body.appendChild(iframe);
 
-    // Try to auto-close the window after 1s if allowed
+    // Try auto-close after 1s
     setTimeout(() => {
       try { window.close(); } catch(e) {
         // If blocked, show fallback
