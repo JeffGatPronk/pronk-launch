@@ -1,79 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Pronk Mobilize</title>
+  <meta charset="utf-8"/>
+  <title>Pronk Mobilize Debug Launcher</title>
   <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    #launchButton {
-      padding: 20px 40px;
-      font-size: 18px;
-      background-color: #0078D7;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    #launchButton:hover { background-color: #005a9e; }
-    #manualLaunch { display: none; margin-top: 20px; font-size: 16px; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    pre { background:#f4f4f4; padding:10px; border-radius:6px; overflow:auto; }
+    .warn { color: #b33; font-weight:700; }
+    #controls { margin-top:16px; }
+    button { padding:10px 14px; font-size:16px; }
   </style>
 </head>
 <body>
-  <h2>Pronk Mobilize Launcher</h2>
-  <p>The test should launch automatically. If not, click the button below:</p>
+  <h2>Pronk Mobilize Debug Launcher</h2>
+  <p>This page will build the <code>pronk://</code> URL exactly as it will be launched and attempt navigation. If you get a URL error, copy the printed URL and paste it into the browser address bar to see whether the URL itself is invalid.</p>
 
-  <button id="launchButton">Launch Pronk Mobilize</button>
-
-  <div id="manualLaunch">
-    <p>Manual fallback:</p>
-    <a id="fallbackLink" href="#" target="_blank">Launch Pronk Mobilize</a>
+  <div>
+    <strong>Built URL:</strong>
+    <pre id="urlBox">(building...)</pre>
   </div>
 
+  <div id="controls">
+    <button id="goBtn">Open Pronk (navigate)</button>
+    <button id="copyBtn">Copy URL</button>
+  </div>
+
+  <p id="status"></p>
+
   <script>
-function getParam(name) {
-  const q = new URLSearchParams(window.location.search);
-  return q.get(name) || null;
-}
-
-let asset =
-  getParam("Asset ID") ||
-  getParam("AssetID") ||
-  getParam("assetid") ||
-  getParam("asset_number") ||
-  "t1234";
-
-const deviceType = "NFPA9";
-
-const pronkUrl =
-  `pronk://${deviceType}?asset=${asset}&autotest={` +
-  `"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500",` +
-  `"NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
-
-
-// --- MAIN WORKING LAUNCH FUNCTION (NO IFRAME) ---
-function launch() {
-  // Navigate directly → this is what Chromium allows
-  window.location.href = pronkUrl;
-
-  // Attempt close
-  setTimeout(() => { try { window.close(); } catch(e){} }, 200);
-  setTimeout(() => { try { window.close(); } catch(e){} }, 600);
-
-  // If still open → show manual fallback
-  setTimeout(() => {
-    if (!window.closed) {
-      document.getElementById("manualLaunch").style.display = "block";
+    // ------- helpers -------
+    function getRawParam(name) {
+      // manual parser to handle param names containing spaces like "Asset ID"
+      const q = window.location.search.substring(1);
+      if (!q) return null;
+      const parts = q.split('&');
+      for (let p of parts) {
+        const kv = p.split('=');
+        const k = decodeURIComponent(kv[0]||'').trim();
+        const v = decodeURIComponent(kv.slice(1).join('=')||'').trim();
+        if (k === name) return v;
+      }
+      return null;
     }
-  }, 1200);
-}
 
-document.getElementById("launchButton").onclick = launch;
-document.getElementById("fallbackLink").href = pronkUrl;
+    function first(...names) {
+      for (const n of names) {
+        const v = getRawParam(n);
+        if (v) return v;
+      }
+      return null;
+    }
 
-window.onload = launch;
+    // ------- build url (NO autotest encoding) -------
+    const deviceType = "NFPA9"; // <<< REPLACE with the exact device type that worked for you previously
+    const asset = first("Asset ID","AssetID","assetid","asset_number") || "t1234";
 
-console.log("Launching →", pronkUrl);
-</script>
+    // literal autotest block (must remain exactly like this)
+    const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
+    const pronkUrl = `pronk://${deviceType}?asset=${asset}&output=json&autotest=${autotest}`;
+
+    // show on page
+    document.getElementById('urlBox').textContent = pronkUrl;
+
+    // status helper
+    const status = document.getElementById('status');
+    function setStatus(msg, isErr=false) {
+      status.textContent = msg;
+      status.className = isErr ? "warn" : "";
+    }
+
+    // open handler
+    document.getElementById('goBtn').addEventListener('click', () => {
+      setStatus('Attempting to open Mobilize...');
+      try {
+        // direct navigation - this is the reliable method
+        window.location.href = pronkUrl;
+      } catch (e) {
+        setStatus('Navigation failed: ' + (e.message||e), true);
+      }
+    });
+
+    // copy handler
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      navigator.clipboard?.writeText(pronkUrl).then(() => {
+        setStatus('URL copied to clipboard.');
+      }, () => {
+        setStatus('Copy failed — highlight and copy the URL above manually.', true);
+      });
+    });
+
+    // Auto-attempt on load (but leaves URL visible)
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        setStatus('Auto-attempting open in 300ms... (URL printed above)');
+        setTimeout(() => { try { window.location.href = pronkUrl; } catch(e) {} }, 300);
+      }, 200);
+    });
+
+    // Console log
+    console.log("Built pronk URL:", pronkUrl);
+  </script>
 </body>
+</html>
+
 </html>
