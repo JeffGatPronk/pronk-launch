@@ -21,7 +21,7 @@
   </div>
 
   <script>
-    // Reliable query parameter parser (handles spaces in name)
+    // Reliable query parameter parser (handles spaces)
     function getQueryParam(name) {
       const query = window.location.search.substring(1);
       const pairs = query.split("&");
@@ -34,7 +34,7 @@
       return null;
     }
 
-    // Get Asset ID from TMS
+    // Get TMS Asset ID
     let asset =
       getQueryParam("Asset ID") ||
       getQueryParam("AssetID") ||
@@ -42,16 +42,10 @@
       getQueryParam("asset_number") ||
       "t1234";
 
-    // Encode asset to handle any special characters safely
-    let safeAsset = encodeURIComponent(asset);
+    // Build raw Pronk Mobilize URL (no output=json)
+    const pronkUrl = `pronk://devtype?asset=${asset}&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
-    // Replace with your actual device type
-    const deviceType = "NFPA9";  
-
-    // Build Pronk Mobilize URL
-    const pronkUrl = `pronk://${deviceType}?asset=${safeAsset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
-
-    // Assign manual fallback link
+    // Manual fallback link
     const fallback = document.getElementById('fallbackLink');
     fallback.href = pronkUrl;
 
