@@ -42,10 +42,13 @@
       getQueryParam("asset_number") ||
       "t1234";
 
-    // Build Pronk Mobilize URL (include output=json for Windows)
-    const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
+    // Replace this with the exact device type string that worked in your static URL
+    const deviceType = "NFPA9";  
 
-    // Manual fallback link
+    // Build Pronk Mobilize URL (include output=json for Windows)
+    const pronkUrl = `pronk://${deviceType}?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
+
+    // Assign manual fallback link
     const fallback = document.getElementById('fallbackLink');
     fallback.href = pronkUrl;
 
