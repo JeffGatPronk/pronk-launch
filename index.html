@@ -30,66 +30,76 @@
   </div>
 
   <script>
-    // Reliable query parameter parser (handles spaces in name)
-    function getQueryParam(name) {
-      const query = window.location.search.substring(1);
-      const pairs = query.split("&");
-      for (let i = 0; i < pairs.length; i++) {
-        const parts = pairs[i].split("=");
-        const key = decodeURIComponent(parts[0]);
-        const value = decodeURIComponent(parts[1] || "");
-        if (key === name) return value.trim();
+  // --- Read TMS parameters ---
+  function getParam(name) {
+    const q = new URLSearchParams(window.location.search);
+    return q.get(name) || null;
+  }
+
+  // Asset ID from TMS
+  let asset =
+    getParam("Asset ID") ||
+    getParam("AssetID") ||
+    getParam("assetid") ||
+    getParam("asset_number") ||
+    "t1234";
+
+  // Your WORKING device type
+  const deviceType = "NFPA9";
+
+  // Final Pronk URL (NO encoding)
+  const pronkUrl =
+    `pronk://${deviceType}?asset=${asset}&autotest={` +
+    `"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500",` +
+    `"NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
+
+
+  // --- Auto-close strategy ---
+  // Windows blocks window.close() unless:
+  //   A) it is called immediately after a navigation attempt, OR
+  //   B) it is called inside a very short timeout after iframe protocol load
+  //
+  // This version uses BOTH techniques.
+
+  function autoLaunchAndClose() {
+    // Invisible iframe launch (most reliable)
+    const iframe = document.createElement("iframe");
+    iframe.style.width = "1px";
+    iframe.style.height = "1px";
+    iframe.style.border = "none";
+    iframe.src = pronkUrl;
+    document.body.appendChild(iframe);
+
+    // Try to close VERY fast (Chrome sometimes allows this)
+    setTimeout(() => {
+      try { window.close(); } catch (e) {}
+    }, 150);
+
+    // Second attempt (fallback)
+    setTimeout(() => {
+      try { window.close(); } catch (e) {}
+    }, 600);
+
+    // If still open → show fallback
+    setTimeout(() => {
+      if (!window.closed) {
+        document.getElementById("manualLaunch").style.display = "block";
       }
-      return null;
-    }
+    }, 1200);
+  }
 
-    // Get Asset ID from TMS
-    let asset =
-      getQueryParam("Asset ID") ||
-      getQueryParam("AssetID") ||
-      getQueryParam("assetid") ||
-      getQueryParam("asset_number") ||
-      "t1234";
+  // Manual fallback
+  document.getElementById("launchButton").onclick = function () {
+    window.location.href = pronkUrl;
+    setTimeout(() => { try { window.close(); } catch (e) {} }, 300);
+  };
 
-    // Build Pronk Mobilize URL (no output=json)
-    const pronkUrl = `pronk://devtype?asset=${asset}&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
+  document.getElementById("fallbackLink").href = pronkUrl;
 
-    // Assign manual fallback link
-    const fallback = document.getElementById('fallbackLink');
-    fallback.href = pronkUrl;
+  // Auto-launch on load
+  window.onload = autoLaunchAndClose;
 
-    // Button click
-    const btn = document.getElementById('launchButton');
-    btn.onclick = function() {
-      window.location.href = pronkUrl;
-      setTimeout(() => { try { window.close(); } catch(e) {} }, 1000);
-    };
-
-    // Auto-launch using tiny iframe with auto-close
-    function attemptAutoLaunch() {
-      const iframe = document.createElement('iframe');
-      iframe.style.width = "1px";
-      iframe.style.height = "1px";
-      iframe.style.border = "none";
-      iframe.src = pronkUrl;
-      document.body.appendChild(iframe);
-
-      // Attempt to auto-close window
-      setTimeout(() => {
-        try {
-          window.close();
-        } catch (e) {
-          // If blocked, show fallback button
-          document.getElementById('manualLaunch').style.display = 'block';
-        }
-      }, 1000);
-    }
-
-    window.onload = function() {
-      attemptAutoLaunch();
-    };
-
-    console.log("Pronk URL:", pronkUrl);
-  </script>
+  console.log("Launching:", pronkUrl);
+</script>
 </body>
 </html>
