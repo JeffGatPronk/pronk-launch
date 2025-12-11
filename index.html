@@ -20,13 +20,15 @@
     const autotestBlock =
       '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-    // Final deep link for Pronk Mobilize
-    let pronkUrl = "pronk://devtype";
-    if (passthrough.length > 0) {
-      pronkUrl += "?" + passthrough.join("&") + "&autotest=" + autotestBlock;
-    } else {
-      pronkUrl += "?autotest=" + autotestBlock;
-    }
+   // Final deep link for Pronk Mobilize
+let pronkUrl = "pronk://open?devtype=json";
+
+if (passthrough.length > 0) {
+  pronkUrl += "&" + passthrough.join("&") + "&autotest=" + autotestBlock;
+} else {
+  pronkUrl += "&autotest=" + autotestBlock;
+}
+
 
     // Trigger the deep link via a user-click simulation
     function launch() {
