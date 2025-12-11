@@ -6,14 +6,17 @@
   <style>
     html, body {
       margin: 0; padding: 0;
-      width: 1px; height: 1px; /* tiny invisible window */
-      overflow: hidden;
       font-family: sans-serif;
     }
-    #manualLaunch { display: none; }
+    #manualLaunch { display: none; margin-top: 1em; }
+    #launchButton { padding: 10px 20px; font-size: 16px; }
   </style>
 </head>
 <body>
+  <h2>Launching Pronk Mobilize…</h2>
+  <p>If nothing happens automatically, click the button below:</p>
+
+  <button id="launchButton">Launch Pronk Mobilize</button>
 
   <div id="manualLaunch">
     <p>Manual fallback:</p>
@@ -21,7 +24,7 @@
   </div>
 
   <script>
-    // Simple query parameter parser
+    // Parse TMS query parameters
     function getQueryParam(name) {
       const query = window.location.search.substring(1);
       const pairs = query.split("&");
@@ -34,40 +37,41 @@
       return null;
     }
 
-    // Get Asset ID from TMS (required)
-    let asset = getQueryParam("Asset ID");
-    if (!asset) {
-      alert("Error: Asset ID is required from TMS.");
-      throw new Error("Asset ID missing");
-    }
+    // Get Asset ID from TMS
+    let asset = getQueryParam("Asset ID") || "t1234";
 
-    // Use exact device type from your working static URL
-    const deviceType = "NFPA9"; // <-- replace with your actual device type
+    // Device type from your working static URL
+    const deviceType = "NFPA9";
 
-    // Build Mobilize URL (autotest literal, NO encoding)
+    // Build Pronk Mobilize URL (autotest literal, no encoding)
     const pronkUrl = `pronk://${deviceType}?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
     // Assign manual fallback link
     const fallback = document.getElementById('fallbackLink');
     fallback.href = pronkUrl;
 
-    // Auto-launch via tiny invisible iframe
-    const iframe = document.createElement('iframe');
-    iframe.style.width = "1px";
-    iframe.style.height = "1px";
-    iframe.style.border = "none";
-    iframe.src = pronkUrl;
-    document.body.appendChild(iframe);
+    // Auto-launch via hidden anchor click
+    function launchPronk() {
+      const a = document.createElement('a');
+      a.href = pronkUrl;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+    }
 
-    // Try auto-close after 1s
-    setTimeout(() => {
-      try { window.close(); } catch(e) {
-        // If blocked, show fallback
+    window.onload = function() {
+      // Launch automatically
+      launchPronk();
+
+      // Assign button
+      const btn = document.getElementById('launchButton');
+      btn.onclick = launchPronk;
+
+      // Show manual fallback if blocked
+      setTimeout(() => {
         document.getElementById('manualLaunch').style.display = 'block';
-      }
-    }, 1000);
-
-    console.log("Pronk URL:", pronkUrl);
+      }, 1000);
+    };
   </script>
 </body>
 </html>
