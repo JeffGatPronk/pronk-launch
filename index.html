@@ -34,7 +34,7 @@
       return null;
     }
 
-    // Get TMS Asset ID
+    // Get Asset ID from TMS
     let asset =
       getQueryParam("Asset ID") ||
       getQueryParam("AssetID") ||
@@ -42,8 +42,8 @@
       getQueryParam("asset_number") ||
       "t1234";
 
-    // Build raw Pronk Mobilize URL (no output=json)
-    const pronkUrl = `pronk://devtype?asset=${asset}&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
+    // Build Pronk Mobilize URL (include output=json for Windows)
+    const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
     // Manual fallback link
     const fallback = document.getElementById('fallbackLink');
