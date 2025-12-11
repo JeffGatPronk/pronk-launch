@@ -6,7 +6,6 @@
   <style>
     body { font-family: sans-serif; }
     #launchButton { padding: 12px 24px; font-size: 16px; }
-    #manualLaunch { display: none; margin-top: 1em; }
   </style>
 </head>
 <body>
@@ -15,31 +14,23 @@
 
   <button id="launchButton">Launch Pronk Mobilize</button>
 
-  <div id="manualLaunch">
-    <p>If the button doesn’t work, copy/paste this URL into your browser:</p>
-    <pre id="fallbackUrl"></pre>
-  </div>
-
   <script>
-    // Get asset from TMS query string
     const params = new URLSearchParams(window.location.search);
-    let asset = params.get("asset") || params.get("assetid") || params.get("asset_number") || "t1234";
-    asset = asset.trim(); // remove any extra spaces
 
-    // Raw Pronk Mobilize URL
+    // Get asset from TMS, fallback to t1234
+    let asset = (params.get("asset") || "t1234").trim();
+
+    // Sanitize asset to only allow letters and numbers
+    asset = asset.replace(/[^a-zA-Z0-9]/g,''); 
+
+    // Build raw Pronk Mobilize URL
     const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
-    // Assign button click
     const btn = document.getElementById('launchButton');
     btn.onclick = function() {
       window.location.href = pronkUrl; // raw URL, no encoding
     };
 
-    // Show fallback URL
-    const fallback = document.getElementById('fallbackUrl');
-    fallback.textContent = pronkUrl;
-
-    // Optional console log for debugging
     console.log("Pronk URL:", pronkUrl);
   </script>
 </body>
