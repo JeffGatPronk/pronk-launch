@@ -2,80 +2,25 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Pronk Mobilize</title>
+  <title>Launching OneQA...</title>
   <script>
-    const params = new URLSearchParams(window.location.search);
-
-    // Capture asset from TMS — supports common token names
-    const asset =
-      params.get("asset") ||
-      params.get("assetid") ||
-      params.get("asset_number") ||
-      "t1234"; // fallback if missing
-
-    // Collect other TMS fields dynamically, excluding asset and autotest
-    const passthrough = [];
-    for (const [key, value] of params.entries()) {
-      const lowerKey = key.toLowerCase();
-      if (
-        lowerKey !== "asset" &&
-        lowerKey !== "assetid" &&
-        lowerKey !== "asset_number" &&
-        lowerKey !== "autotest"
-      ) {
-        passthrough.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
-      }
+    function getParam(name) {
+      return new URLSearchParams(window.location.search).get(name) || '';
     }
 
-    // Raw autotest block
-    const autotestBlockRaw =
-      '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+    const asset = getParam('asset');
 
-    // Double encode autotest block for Windows/Chromium
-    const autotestBlock = encodeURIComponent(encodeURIComponent(autotestBlockRaw));
+    const pronkUrl =
+      'pronk://devtype' +
+      '?asset=' + encodeURIComponent(asset) +
+      '&output=json' +
+      '&callback=Openerapp%3A%2F%2Fresult%2F' +
+      '&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-    // Build final Pronk deep link
-    let pronkUrl = `pronk://devtype?asset=${encodeURIComponent(asset)}&output=json&autotest=${autotestBlock}`;
-    if (passthrough.length > 0) {
-      pronkUrl += "&" + passthrough.join("&");
-    }
-
-    // Function to launch Pronk Mobilize in a new tab
-    function launchMobilize() {
-      const newWindow = window.open(pronkUrl, '_blank');
-      if (!newWindow) {
-        // Show manual link if popup blocked
-        const fallback = document.getElementById('manualLaunch');
-        fallback.style.display = "inline";
-      } else {
-        // Auto-close redirect tab
-        setTimeout(() => window.close(), 600);
-      }
-    }
-
-    // Hidden button fallback to simulate user gesture
-    function launchWithClickFallback() {
-      const btn = document.createElement('button');
-      btn.style.display = "none";
-      document.body.appendChild(btn);
-      btn.addEventListener('click', launchMobilize);
-      btn.click(); // Trigger programmatic click
-    }
-
-    // Launch on page load
-    window.onload = function() {
-      launchWithClickFallback();
-    };
+    window.location.href = pronkUrl;
   </script>
 </head>
 <body>
-  <p style="font-family: sans-serif;">Launching Pronk Mobilize…</p>
-  <p style="font-family: sans-serif; display:none;" id="manualLaunch">
-    Click <a id="manualLink" href="">here</a> if Pronk Mobilize does not launch automatically.
-  </p>
-  <script>
-    // Assign fallback link dynamically
-    document.getElementById('manualLink').href = pronkUrl;
-  </script>
+  <p>Launching OneQA…</p>
 </body>
 </html>
