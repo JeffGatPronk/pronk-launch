@@ -30,76 +30,50 @@
   </div>
 
   <script>
-  // --- Read TMS parameters ---
-  function getParam(name) {
-    const q = new URLSearchParams(window.location.search);
-    return q.get(name) || null;
-  }
+function getParam(name) {
+  const q = new URLSearchParams(window.location.search);
+  return q.get(name) || null;
+}
 
-  // Asset ID from TMS
-  let asset =
-    getParam("Asset ID") ||
-    getParam("AssetID") ||
-    getParam("assetid") ||
-    getParam("asset_number") ||
-    "t1234";
+let asset =
+  getParam("Asset ID") ||
+  getParam("AssetID") ||
+  getParam("assetid") ||
+  getParam("asset_number") ||
+  "t1234";
 
-  // Your WORKING device type
-  const deviceType = "NFPA9";
+const deviceType = "NFPA9";
 
-  // Final Pronk URL (NO encoding)
-  const pronkUrl =
-    `pronk://${deviceType}?asset=${asset}&autotest={` +
-    `"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500",` +
-    `"NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
+const pronkUrl =
+  `pronk://${deviceType}?asset=${asset}&autotest={` +
+  `"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500",` +
+  `"NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
 
-  // --- Auto-close strategy ---
-  // Windows blocks window.close() unless:
-  //   A) it is called immediately after a navigation attempt, OR
-  //   B) it is called inside a very short timeout after iframe protocol load
-  //
-  // This version uses BOTH techniques.
+// --- MAIN WORKING LAUNCH FUNCTION (NO IFRAME) ---
+function launch() {
+  // Navigate directly → this is what Chromium allows
+  window.location.href = pronkUrl;
 
-  function autoLaunchAndClose() {
-    // Invisible iframe launch (most reliable)
-    const iframe = document.createElement("iframe");
-    iframe.style.width = "1px";
-    iframe.style.height = "1px";
-    iframe.style.border = "none";
-    iframe.src = pronkUrl;
-    document.body.appendChild(iframe);
+  // Attempt close
+  setTimeout(() => { try { window.close(); } catch(e){} }, 200);
+  setTimeout(() => { try { window.close(); } catch(e){} }, 600);
 
-    // Try to close VERY fast (Chrome sometimes allows this)
-    setTimeout(() => {
-      try { window.close(); } catch (e) {}
-    }, 150);
+  // If still open → show manual fallback
+  setTimeout(() => {
+    if (!window.closed) {
+      document.getElementById("manualLaunch").style.display = "block";
+    }
+  }, 1200);
+}
 
-    // Second attempt (fallback)
-    setTimeout(() => {
-      try { window.close(); } catch (e) {}
-    }, 600);
+document.getElementById("launchButton").onclick = launch;
+document.getElementById("fallbackLink").href = pronkUrl;
 
-    // If still open → show fallback
-    setTimeout(() => {
-      if (!window.closed) {
-        document.getElementById("manualLaunch").style.display = "block";
-      }
-    }, 1200);
-  }
+window.onload = launch;
 
-  // Manual fallback
-  document.getElementById("launchButton").onclick = function () {
-    window.location.href = pronkUrl;
-    setTimeout(() => { try { window.close(); } catch (e) {} }, 300);
-  };
-
-  document.getElementById("fallbackLink").href = pronkUrl;
-
-  // Auto-launch on load
-  window.onload = autoLaunchAndClose;
-
-  console.log("Launching:", pronkUrl);
+console.log("Launching →", pronkUrl);
 </script>
+
 </body>
 </html>
