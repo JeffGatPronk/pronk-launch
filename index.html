@@ -22,18 +22,28 @@
   </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
+    // Function to reliably read any query parameter (handles spaces in name)
+    function getQueryParam(name) {
+      const query = window.location.search.substring(1);
+      const pairs = query.split("&");
+      for (let i = 0; i < pairs.length; i++) {
+        const parts = pairs[i].split("=");
+        const key = decodeURIComponent(parts[0]);
+        const value = decodeURIComponent(parts[1] || "");
+        if (key === name) return value.trim();
+      }
+      return null;
+    }
 
-    // Read Asset ID from TMS (parameter name has a space)
-    let asset = (
-      params.get("Asset ID") ||   // TMS query field with space
-      params.get("AssetID") ||    // fallback without space
-      params.get("assetid") || 
-      params.get("asset_number") || 
-      "t1234"
-    ).trim(); // Trim whitespace
+    // Get Asset ID from TMS
+    let asset =
+      getQueryParam("Asset ID") ||  // TMS field with space
+      getQueryParam("AssetID") ||
+      getQueryParam("assetid") ||
+      getQueryParam("asset_number") ||
+      "t1234";
 
-    // Build raw Pronk Mobilize URL (no encoding)
+    // Raw Pronk Mobilize URL
     const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
     // Manual fallback link
@@ -46,7 +56,7 @@
       window.location.href = pronkUrl;
     };
 
-    // Attempt auto-launch using tiny iframe
+    // Auto-launch attempt using tiny iframe
     function attemptAutoLaunch() {
       const iframe = document.createElement('iframe');
       iframe.style.width = "1px";
@@ -55,7 +65,6 @@
       iframe.src = pronkUrl;
       document.body.appendChild(iframe);
 
-      // Show fallback if blocked
       setTimeout(() => {
         document.getElementById('manualLaunch').style.display = 'block';
       }, 1000);
