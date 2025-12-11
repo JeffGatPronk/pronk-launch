@@ -3,27 +3,75 @@
 <head>
   <meta charset="utf-8">
   <title>Pronk Mobilize</title>
-</head>
-<body style="font-family:sans-serif;">
-  <p>Click the button below to launch Pronk Mobilize:</p>
-  <button onclick="launchPronk()">Launch Pronk Mobilize</button>
-
   <script>
-    // Capture asset from TMS query string, fallback to t1234
     const params = new URLSearchParams(window.location.search);
+
+    // Get asset from TMS
     const asset =
       params.get("asset") ||
       params.get("assetid") ||
       params.get("asset_number") ||
       "t1234";
 
-    // Raw Pronk Mobilize URL with no encoding
-    const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
-
-    function launchPronk() {
-      // Use user click to open the URL (required for Windows)
-      window.location.href = pronkUrl;
+    // Collect other TMS fields dynamically (excluding asset/autotest)
+    const passthrough = [];
+    for (const [key, value] of params.entries()) {
+      const lowerKey = key.toLowerCase();
+      if (
+        lowerKey !== "asset" &&
+        lowerKey !== "assetid" &&
+        lowerKey !== "asset_number" &&
+        lowerKey !== "autotest"
+      ) {
+        passthrough.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+      }
     }
+
+    // Raw autotest block
+    const autotestRaw = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+
+    // URL-encode autotest block
+    const autotestEncoded = encodeURIComponent(autotestRaw);
+
+    // Build Pronk URL with output=json first
+    let pronkUrl = `pronk://devtype?asset=${encodeURIComponent(asset)}&output=json&autotest=${autotestEncoded}`;
+    if (passthrough.length > 0) {
+      pronkUrl += "&" + passthrough.join("&");
+    }
+
+    // Launch Pronk Mobilize
+    function launchMobilize() {
+      const newWindow = window.open(pronkUrl, '_blank');
+      if (!newWindow) {
+        // Show manual fallback link
+        document.getElementById('manualLaunch').style.display = "inline";
+      } else {
+        setTimeout(() => window.close(), 600);
+      }
+    }
+
+    // Simulate a user click to satisfy Chrome/Edge
+    function launchWithClickFallback() {
+      const btn = document.createElement('button');
+      btn.style.display = "none";
+      document.body.appendChild(btn);
+      btn.addEventListener('click', launchMobilize);
+      btn.click();
+    }
+
+    window.onload = function() {
+      launchWithClickFallback();
+    };
+  </script>
+</head>
+<body>
+  <p style="font-family:sans-serif;">Launching Pronk Mobilize…</p>
+  <p style="font-family:sans-serif; display:none;" id="manualLaunch">
+    Click <a id="manualLink" href="">here</a> if Pronk Mobilize does not launch automatically.
+  </p>
+  <script>
+    // Assign fallback link dynamically
+    document.getElementById('manualLink').href = pronkUrl;
   </script>
 </body>
 </html>
