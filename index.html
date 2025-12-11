@@ -3,12 +3,9 @@
 <head>
   <meta charset="utf-8">
   <title>Pronk Mobilize</title>
-
   <script>
-    // Read all TMS parameters dynamically
+    // Capture all TMS parameters dynamically
     const params = new URLSearchParams(window.location.search);
-
-    // Build dynamic portion from TMS
     const passthrough = [];
     for (const [key, value] of params.entries()) {
       if (key.toLowerCase() !== "autotest") {
@@ -16,38 +13,32 @@
       }
     }
 
-    // Required fixed autotest block
-    const autotestBlock =
-      '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+    // Fixed autotest block
+    const autotestBlock = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-   // Final deep link for Pronk Mobilize
-let pronkUrl = "pronk://open?devtype=json";
-
-if (passthrough.length > 0) {
-  pronkUrl += "&" + passthrough.join("&") + "&autotest=" + autotestBlock;
-} else {
-  pronkUrl += "&autotest=" + autotestBlock;
-}
-
-
-    // Trigger the deep link via a user-click simulation
-    function launch() {
-      const a = document.createElement('a');
-      a.href = pronkUrl;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();  // Browser counts this as a user gesture → Pronk launches
+    // Build final Pronk deep link with devtype=json
+    let pronkUrl = "pronk://open?devtype=json";
+    if (passthrough.length > 0) {
+      pronkUrl += "&" + passthrough.join("&") + "&autotest=" + autotestBlock;
+    } else {
+      pronkUrl += "&autotest=" + autotestBlock;
     }
 
-    // Launch as soon as the page is ready
-    window.onload = function () {
-      launch();
+    // Function to simulate user click (required for Chrome/Edge/Safari)
+    function launchMobilize() {
+      const link = document.createElement('a');
+      link.href = pronkUrl;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();  // Browser treats as user action → Pronk launches
+    }
 
-      // Auto-close the window (TMS popup goes away)
-      setTimeout(() => window.close(), 600);
+    // Launch on page load and close browser window
+    window.onload = function() {
+      launchMobilize();
+      setTimeout(() => window.close(), 600); // Close popup after 0.6s
     };
   </script>
-
 </head>
 <body>
   <p style="font-family: sans-serif;">Launching Pronk Mobilize…</p>
