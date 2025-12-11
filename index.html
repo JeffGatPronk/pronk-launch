@@ -25,21 +25,31 @@
       pronkUrl += "&autotest=" + autotestBlock;
     }
 
-    // Launch Pronk Mobilize in a new tab (ensures repeated launches work)
+    // Function to launch Pronk Mobilize in a new tab
     function launchMobilize() {
       const newWindow = window.open(pronkUrl, '_blank');
       if (!newWindow) {
-        // Fallback: show manual link if popup blocked
+        // Fallback: show hidden manual link if popup blocked
         const fallback = document.getElementById('manualLaunch');
         fallback.style.display = "inline";
       } else {
-        // Auto-close this redirect tab
+        // Close this redirect tab after a short delay
         setTimeout(() => window.close(), 600);
       }
     }
 
+    // Optional hidden button fallback (ensures browser treats as user gesture)
+    function launchWithClickFallback() {
+      const btn = document.createElement('button');
+      btn.style.display = "none";
+      document.body.appendChild(btn);
+      btn.addEventListener('click', launchMobilize);
+      btn.click(); // Trigger programmatic click
+    }
+
+    // Launch on page load
     window.onload = function() {
-      launchMobilize();
+      launchWithClickFallback();
     };
   </script>
 </head>
