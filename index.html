@@ -31,8 +31,8 @@
     const autotestBlockRaw =
       '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-    // URL-encode autotest block for Windows
-    const autotestBlock = encodeURIComponent(autotestBlockRaw);
+    // Double encode autotest block for Windows/Chromium
+    const autotestBlock = encodeURIComponent(encodeURIComponent(autotestBlockRaw));
 
     // Build final Pronk deep link
     let pronkUrl = `pronk://devtype?asset=${encodeURIComponent(asset)}&output=json&autotest=${autotestBlock}`;
@@ -44,7 +44,7 @@
     function launchMobilize() {
       const newWindow = window.open(pronkUrl, '_blank');
       if (!newWindow) {
-        // Fallback: show manual link if popup blocked
+        // Show manual link if popup blocked
         const fallback = document.getElementById('manualLaunch');
         fallback.style.display = "inline";
       } else {
@@ -59,7 +59,7 @@
       btn.style.display = "none";
       document.body.appendChild(btn);
       btn.addEventListener('click', launchMobilize);
-      btn.click();
+      btn.click(); // Trigger programmatic click
     }
 
     // Launch on page load
