@@ -15,6 +15,7 @@
       cursor: pointer;
     }
     #launchButton:hover { background-color: #005a9e; }
+    #manualLaunch { display: none; margin-top: 20px; font-size: 16px; }
   </style>
 </head>
 <body>
@@ -23,8 +24,13 @@
 
   <button id="launchButton">Launch Pronk Mobilize</button>
 
+  <div id="manualLaunch">
+    <p>Manual fallback:</p>
+    <a id="fallbackLink" href="#" target="_blank">Launch Pronk Mobilize</a>
+  </div>
+
   <script>
-    // --- Helper to get TMS query parameters (supports spaces in field names) ---
+    // --- Helper to get TMS query parameters ---
     function getParam(name) {
       const q = window.location.search.substring(1);
       const pairs = q.split('&');
@@ -37,7 +43,7 @@
       return null;
     }
 
-    // --- Dynamic Asset from TMS ---
+    // --- Dynamic Asset ---
     const asset =
       getParam("Asset ID") ||
       getParam("AssetID") ||
@@ -51,12 +57,30 @@
     // --- Build Pronk URL ---
     const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest=${autotest}`;
 
-    // --- Launch function ---
+    // --- Manual fallback link ---
+    const fallback = document.getElementById('fallbackLink');
+    fallback.href = pronkUrl;
+
+    // --- Launch function (reliable) ---
     function launchPronk() {
       try {
-        window.location.href = pronkUrl; // reliably sends parameters
+        // Open temporary window to trigger custom protocol
+        const tempWin = window.open(pronkUrl, "_blank");
+        if (tempWin) tempWin.close(); // attempt to auto-close
+
+        // Close launcher window after short delay
+        setTimeout(() => { try { window.close(); } catch(e) {} }, 500);
+
+        // Show fallback if still open
+        setTimeout(() => {
+          if (!window.closed) {
+            document.getElementById('manualLaunch').style.display = 'block';
+          }
+        }, 1200);
+
       } catch(e) {
         console.error("Launch failed:", e);
+        document.getElementById('manualLaunch').style.display = 'block';
       }
     }
 
@@ -65,7 +89,7 @@
 
     // --- Auto-launch on page load ---
     window.onload = function() {
-      launchPronk();
+      setTimeout(launchPronk, 200); // small delay helps Chrome/Edge register the click
     };
 
     console.log("Pronk URL:", pronkUrl);
