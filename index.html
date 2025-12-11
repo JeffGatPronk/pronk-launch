@@ -5,61 +5,35 @@
   <title>Pronk Mobilize</title>
   <style>
     body { font-family: sans-serif; }
-    #manualLaunch { display: none; margin-top: 1em; }
     #launchButton { padding: 10px 20px; font-size: 16px; }
   </style>
 </head>
 <body>
-  <h2>Launching Pronk Mobilize…</h2>
-  <p>If nothing happens automatically, click the button below:</p>
+  <h2>Pronk Mobilize Launcher</h2>
+  <p>Click the button below to launch Pronk Mobilize:</p>
 
   <button id="launchButton">Launch Pronk Mobilize</button>
 
-  <div id="manualLaunch">
-    <p>Manual fallback:</p>
-    <a id="fallbackLink" href="#" target="_blank">Launch Pronk Mobilize</a>
-  </div>
-
   <script>
-    // Get asset from TMS query string
+    // Read TMS-provided asset from query string
     const params = new URLSearchParams(window.location.search);
     const asset =
-      params.get("asset") ||
+      params.get("asset") ||   // standard TMS parameter
       params.get("assetid") ||
       params.get("asset_number") ||
-      "t1234";
+      "t1234";  // fallback if TMS does not provide asset
 
-    // Raw Pronk Mobilize URL (no encoding)
+    // Build raw Pronk Mobilize URL with TMS asset
     const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
 
-    // Assign manual fallback link
-    const fallback = document.getElementById('fallbackLink');
-    fallback.href = pronkUrl;
-
-    // Function to simulate a user click (required for Windows Chrome/Edge)
-    function launchPronk() {
-      const a = document.createElement('a');
-      a.href = pronkUrl;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click(); // true user gesture
-      setTimeout(() => window.close(), 600); // auto-close redirect tab
-    }
-
-    // Auto-launch when page loads
-    window.onload = function() {
-      // Also assign the visible button
-      const btn = document.getElementById('launchButton');
-      btn.onclick = launchPronk;
-
-      // Simulate click automatically
-      launchPronk();
-
-      // Show manual fallback after short delay if blocked
-      setTimeout(() => {
-        document.getElementById('manualLaunch').style.display = 'block';
-      }, 1000);
+    // Assign URL to button click
+    const btn = document.getElementById('launchButton');
+    btn.onclick = function() {
+      window.location.href = pronkUrl;
     };
+
+    // Optional: show URL for manual copy/paste
+    console.log("Pronk URL:", pronkUrl);
   </script>
 </body>
 </html>
