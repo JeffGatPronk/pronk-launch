@@ -2,19 +2,18 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Pronk Mobilize</title>
+  <title>Pronk Mobilize Launcher</title>
   <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    #launchButton { padding: 20px 40px; font-size: 18px; background-color: #0078D7; color: white; border: none; border-radius: 8px; cursor: pointer; }
-    #launchButton:hover { background-color: #005a9e; }
-    #manualLaunch { display: none; margin-top: 20px; font-size: 16px; }
+    html, body {
+      margin: 0; padding: 0;
+      width: 1px; height: 1px; /* tiny invisible window */
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    #manualLaunch { display: none; }
   </style>
 </head>
 <body>
-  <h2>Pronk Mobilize Launcher</h2>
-  <p>The test should launch automatically. If not, click the button below:</p>
-
-  <button id="launchButton">Launch Pronk Mobilize</button>
 
   <div id="manualLaunch">
     <p>Manual fallback:</p>
@@ -22,7 +21,7 @@
   </div>
 
   <script>
-    // Helper to reliably get query parameter (works with spaces in the name)
+    // Reliable query parameter parser (handles spaces in name)
     function getQueryParam(name) {
       const query = window.location.search.substring(1);
       const pairs = query.split("&");
@@ -35,45 +34,42 @@
       return null;
     }
 
-    // Get Asset ID from TMS (space in field name is possible)
+    // Get Asset ID from TMS
     let asset =
-      getQueryParam("Asset ID") ||  // exact TMS field name
+      getQueryParam("Asset ID") ||
       getQueryParam("AssetID") ||
       getQueryParam("assetid") ||
       getQueryParam("asset_number") ||
-      "t1234"; // fallback
+      "t1234";
 
-    // Build raw Pronk Mobilize URL (no output=json)
-    const pronkUrl = `pronk://devtype?asset=${asset}&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
+    // Encode asset safely
+    let safeAsset = encodeURIComponent(asset);
 
-    // Manual fallback link
+    // Replace with your actual device type from the working static URL
+    const deviceType = "NFPA9";  
+
+    // Build Pronk Mobilize URL
+    const pronkUrl = `pronk://${deviceType}?asset=${safeAsset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
+
+    // Assign manual fallback link
     const fallback = document.getElementById('fallbackLink');
     fallback.href = pronkUrl;
 
-    // Assign button click
-    const btn = document.getElementById('launchButton');
-    btn.onclick = function() {
-      window.location.href = pronkUrl;
-    };
+    // Auto-launch via tiny iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.width = "1px";
+    iframe.style.height = "1px";
+    iframe.style.border = "none";
+    iframe.src = pronkUrl;
+    document.body.appendChild(iframe);
 
-    // Auto-launch using tiny iframe
-    function attemptAutoLaunch() {
-      const iframe = document.createElement('iframe');
-      iframe.style.width = "1px";
-      iframe.style.height = "1px";
-      iframe.style.border = "none";
-      iframe.src = pronkUrl;
-      document.body.appendChild(iframe);
-
-      // Show manual fallback if blocked
-      setTimeout(() => {
+    // Try to auto-close the window after 1s if allowed
+    setTimeout(() => {
+      try { window.close(); } catch(e) {
+        // If blocked, show fallback
         document.getElementById('manualLaunch').style.display = 'block';
-      }, 1000);
-    }
-
-    window.onload = function() {
-      attemptAutoLaunch();
-    };
+      }
+    }, 1000);
 
     console.log("Pronk URL:", pronkUrl);
   </script>
