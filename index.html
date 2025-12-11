@@ -54,8 +54,8 @@
     // --- Literal autotest block ---
     const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-    // --- Build Pronk URL ---
-    const pronkUrl = `pronk://devtype?asset=${asset}&autotest=${autotest}`;
+    // Build final Pronk URL
+    const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest=${autotest}`;
 
     // --- Assign manual fallback link ---
     const fallback = document.getElementById('fallbackLink');
