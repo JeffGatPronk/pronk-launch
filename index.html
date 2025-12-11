@@ -3,75 +3,63 @@
 <head>
   <meta charset="utf-8">
   <title>Pronk Mobilize</title>
-  <script>
-    const params = new URLSearchParams(window.location.search);
+  <style>
+    body { font-family: sans-serif; }
+    #manualLaunch { display: none; margin-top: 1em; }
+    #launchButton { padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2>Launching Pronk Mobilize…</h2>
+  <p>If nothing happens automatically, click the button below:</p>
 
-    // Get asset from TMS
+  <button id="launchButton">Launch Pronk Mobilize</button>
+
+  <div id="manualLaunch">
+    <p>Manual fallback:</p>
+    <a id="fallbackLink" href="#" target="_blank">Launch Pronk Mobilize</a>
+  </div>
+
+  <script>
+    // Get asset from TMS query string
+    const params = new URLSearchParams(window.location.search);
     const asset =
       params.get("asset") ||
       params.get("assetid") ||
       params.get("asset_number") ||
       "t1234";
 
-    // Collect other TMS fields dynamically (excluding asset/autotest)
-    const passthrough = [];
-    for (const [key, value] of params.entries()) {
-      const lowerKey = key.toLowerCase();
-      if (
-        lowerKey !== "asset" &&
-        lowerKey !== "assetid" &&
-        lowerKey !== "asset_number" &&
-        lowerKey !== "autotest"
-      ) {
-        passthrough.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
-      }
+    // Raw Pronk Mobilize URL (no encoding)
+    const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
+
+    // Assign manual fallback link
+    const fallback = document.getElementById('fallbackLink');
+    fallback.href = pronkUrl;
+
+    // Function to simulate a user click (required for Windows Chrome/Edge)
+    function launchPronk() {
+      const a = document.createElement('a');
+      a.href = pronkUrl;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click(); // true user gesture
+      setTimeout(() => window.close(), 600); // auto-close redirect tab
     }
 
-    // Raw autotest block
-    const autotestRaw = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
-
-    // URL-encode autotest block
-    const autotestEncoded = encodeURIComponent(autotestRaw);
-
-    // Build Pronk URL with output=json first
-    let pronkUrl = `pronk://devtype?asset=${encodeURIComponent(asset)}&output=json&autotest=${autotestEncoded}`;
-    if (passthrough.length > 0) {
-      pronkUrl += "&" + passthrough.join("&");
-    }
-
-    // Launch Pronk Mobilize
-    function launchMobilize() {
-      const newWindow = window.open(pronkUrl, '_blank');
-      if (!newWindow) {
-        // Show manual fallback link
-        document.getElementById('manualLaunch').style.display = "inline";
-      } else {
-        setTimeout(() => window.close(), 600);
-      }
-    }
-
-    // Simulate a user click to satisfy Chrome/Edge
-    function launchWithClickFallback() {
-      const btn = document.createElement('button');
-      btn.style.display = "none";
-      document.body.appendChild(btn);
-      btn.addEventListener('click', launchMobilize);
-      btn.click();
-    }
-
+    // Auto-launch when page loads
     window.onload = function() {
-      launchWithClickFallback();
+      // Also assign the visible button
+      const btn = document.getElementById('launchButton');
+      btn.onclick = launchPronk;
+
+      // Simulate click automatically
+      launchPronk();
+
+      // Show manual fallback after short delay if blocked
+      setTimeout(() => {
+        document.getElementById('manualLaunch').style.display = 'block';
+      }, 1000);
     };
-  </script>
-</head>
-<body>
-  <p style="font-family:sans-serif;">Launching Pronk Mobilize…</p>
-  <p style="font-family:sans-serif; display:none;" id="manualLaunch">
-    Click <a id="manualLink" href="">here</a> if Pronk Mobilize does not launch automatically.
-  </p>
-  <script>
-    // Assign fallback link dynamically
-    document.getElementById('manualLink').href = pronkUrl;
   </script>
 </body>
 </html>
