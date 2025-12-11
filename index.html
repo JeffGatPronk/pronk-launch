@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <title>Pronk Mobilize</title>
   <script>
-    // Capture all TMS parameters dynamically
     const params = new URLSearchParams(window.location.search);
 
-    // Get asset from TMS (required)
-    const asset = params.get("asset") || "t1234"; // fallback if missing
+    // REQUIRED asset from TMS (first asset only)
+    const asset = params.get("asset") || "t1234";
 
-    // Build other TMS fields dynamically (optional)
+    // Collect other TMS fields dynamically, excluding 'asset' and 'autotest'
     const passthrough = [];
     for (const [key, value] of params.entries()) {
-      if (key.toLowerCase() !== "asset" && key.toLowerCase() !== "autotest") {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey !== "asset" && lowerKey !== "autotest") {
         passthrough.push(`${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
       }
     }
@@ -22,7 +22,7 @@
     const autotestBlock =
       '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-    // Build final Pronk deep link
+    // Build Pronk deep link with single asset
     let pronkUrl = `pronk://devtype?asset=${encodeURIComponent(asset)}&output=json&autotest=${autotestBlock}`;
     if (passthrough.length > 0) {
       pronkUrl += "&" + passthrough.join("&");
@@ -32,11 +32,9 @@
     function launchMobilize() {
       const newWindow = window.open(pronkUrl, '_blank');
       if (!newWindow) {
-        // Fallback: show manual link if popup blocked
         const fallback = document.getElementById('manualLaunch');
         fallback.style.display = "inline";
       } else {
-        // Auto-close this redirect tab
         setTimeout(() => window.close(), 600);
       }
     }
@@ -47,10 +45,9 @@
       btn.style.display = "none";
       document.body.appendChild(btn);
       btn.addEventListener('click', launchMobilize);
-      btn.click(); // Trigger programmatic click
+      btn.click();
     }
 
-    // Launch on page load
     window.onload = function() {
       launchWithClickFallback();
     };
@@ -62,7 +59,6 @@
     Click <a id="manualLink" href="">here</a> if Pronk Mobilize does not launch automatically.
   </p>
   <script>
-    // Assign fallback link dynamically
     document.getElementById('manualLink').href = pronkUrl;
   </script>
 </body>
