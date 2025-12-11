@@ -44,15 +44,15 @@
     }
 
     // --- Force correct device type ---
-    const deviceType = "NFPA992012APwGND";
+    const deviceType = "devtype?";
 
     // --- Get asset from TMS, fallback to t1234 ---
     const asset =
-      getParam("Asset ID") ||
-      getParam("AssetID") ||
-      getParam("assetid") ||
-      getParam("asset_number") ||
-      "t1234";
+    getParam("Asset ID") ||
+    getParam("AssetID") ||
+    getParam("assetid") ||
+    getParam("asset_number") ||
+    "t1234";
 
     // --- Build Pronk Mobilize URL (literal autotest) ---
     const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
