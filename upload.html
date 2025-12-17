@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Auto Upload Pronk PDF to TMS</title>
+  <title>Upload Pronk PDF to TMS Procedure Readings</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
     #status { margin-top: 10px; color: green; }
@@ -11,22 +11,31 @@
 </head>
 <body>
 
-<h2>Upload Pronk PDF to TMS Work Order 186494</h2>
+<h2>Upload Pronk PDF to TMS Procedure Readings</h2>
 
-<p>Select the PDF file below. Upload will start automatically.</p>
+<p>Select the PDF file below. Upload will start automatically once selected.</p>
 
 <form id="uploadForm" target="uploadFrame"
       action="https://fhbio.stage.tmsonline.com/tms/tmsconnect/fileexchange"
       method="POST" enctype="multipart/form-data">
 
+  <!-- Hardcoded WorkOrderID -->
   <input type="hidden" name="WorkOrderID" value="186494">
+
+  <!-- Description shown in TMS -->
   <input type="hidden" name="Description" value="Pronk Mobilize Test Report">
+
+  <!-- DocumentType set explicitly to Procedure Readings -->
   <input type="hidden" name="DocumentType" value="ProcedureAttachment">
+
+  <!-- Do not overwrite by default -->
   <input type="hidden" name="Overwrite" value="false">
 
+  <!-- User selects PDF -->
   <input type="file" name="File" id="fileInput" accept=".pdf" required>
 </form>
 
+<!-- Hidden iframe so page does not navigate away -->
 <iframe name="uploadFrame" style="display:none;"></iframe>
 
 <div id="status"></div>
@@ -38,7 +47,7 @@
   const status = document.getElementById('status');
   const error = document.getElementById('error');
 
-  // Trigger upload automatically after user selects file
+  // Automatically submit form when file is selected
   fileInput.addEventListener('change', () => {
     if (fileInput.files.length === 0) {
       error.textContent = "No file selected.";
@@ -48,10 +57,10 @@
     error.textContent = "";
     form.submit();
 
-    // Show success message after 3 seconds (adjust if needed)
+    // Show success message after ~3 seconds
     setTimeout(() => {
-      status.textContent = "Upload complete! Check Work Order 186494 in TMS.";
-      // Optionally close the page (some browsers block it)
+      status.textContent = "Upload complete! Check Procedure Readings in TMS Work Order 186494.";
+      // Attempt to close page (may be blocked by browser)
       window.close();
     }, 3000);
   });
