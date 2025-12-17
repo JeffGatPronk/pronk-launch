@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Auto Upload Pronk PDF to TMS</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #status { margin-top: 10px; color: green; }
+    #error { margin-top: 10px; color: red; }
+  </style>
+</head>
+<body>
+
+<h2>Upload Pronk PDF to TMS Work Order 186494</h2>
+
+<p>Select the PDF file below. Upload will start automatically.</p>
+
+<form id="uploadForm" target="uploadFrame"
+      action="https://fhbio.stage.tmsonline.com/tms/tmsconnect/fileexchange"
+      method="POST" enctype="multipart/form-data">
+
+  <input type="hidden" name="WorkOrderID" value="186494">
+  <input type="hidden" name="Description" value="Pronk Mobilize Test Report">
+  <input type="hidden" name="DocumentType" value="ProcedureAttachment">
+  <input type="hidden" name="Overwrite" value="false">
+
+  <input type="file" name="File" id="fileInput" accept=".pdf" required>
+</form>
+
+<iframe name="uploadFrame" style="display:none;"></iframe>
+
+<div id="status"></div>
+<div id="error"></div>
+
+<script>
+  const form = document.getElementById('uploadForm');
+  const fileInput = document.getElementById('fileInput');
+  const status = document.getElementById('status');
+  const error = document.getElementById('error');
+
+  // Trigger upload automatically after user selects file
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length === 0) {
+      error.textContent = "No file selected.";
+      return;
+    }
+    status.textContent = "Uploading...";
+    error.textContent = "";
+    form.submit();
+
+    // Show success message after 3 seconds (adjust if needed)
+    setTimeout(() => {
+      status.textContent = "Upload complete! Check Work Order 186494 in TMS.";
+      // Optionally close the page (some browsers block it)
+      window.close();
+    }, 3000);
+  });
+</script>
+
+</body>
+</html>
