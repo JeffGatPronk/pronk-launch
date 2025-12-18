@@ -12,11 +12,11 @@
   </style>
 
   <script>
-    // Parse TMS query parameters, handling spaces in names
+    // Capture query parameters from TMS External Link
     const params = new URLSearchParams(window.location.search);
     const TMS_PARAMS = {};
     for (const [key, value] of params.entries()) {
-      TMS_PARAMS[decodeURIComponent(key)] = decodeURIComponent(value);
+      TMS_PARAMS[key] = decodeURIComponent(value);
     }
     console.log("Captured TMS parameters:", TMS_PARAMS);
     window.TMS_PARAMS = TMS_PARAMS;
@@ -33,11 +33,12 @@
       method="POST"
       enctype="multipart/form-data">
 
-  <!-- Hidden fields -->
+  <!-- Hidden fields dynamically populated -->
   <input type="hidden" name="WorkOrderID" id="wo">
   <input type="hidden" name="ProcedureInstanceID" id="pi">
   <input type="hidden" name="AssetID" id="asset">
 
+  <!-- DocumentType for Procedure Readings -->
   <input type="hidden" name="DocumentType" value="ProcedureReadings">
   <input type="hidden" name="Description" value="Pronk Mobilize PDF Upload">
   <input type="hidden" name="Overwrite" value="false">
@@ -53,16 +54,16 @@
 <pre id="debug"></pre>
 
 <script>
-  // Populate hidden fields from TMS parameters
+  // Populate hidden inputs from TMS parameters
   const woField = document.getElementById("wo");
   const piField = document.getElementById("pi");
   const assetField = document.getElementById("asset");
 
-  woField.value = TMS_PARAMS["Work Order ID"] || "";
-  piField.value = TMS_PARAMS["Procedure ID for OneQA"] || TMS_PARAMS["Procedure Number"] || "";
-  assetField.value = TMS_PARAMS["Asset"] || TMS_PARAMS["Asset ID"] || "";
+  woField.value = TMS_PARAMS["workOrderID"] || "";
+  piField.value = TMS_PARAMS["procedureID"] || "";
+  assetField.value = TMS_PARAMS["asset"] || TMS_PARAMS["assetAlt"] || "";
 
-  // Display captured parameters for debugging
+  // Show captured values for verification
   document.getElementById("debug").textContent =
     JSON.stringify({
       WorkOrderID: woField.value,
@@ -87,7 +88,7 @@
         warning.textContent = "Note: ProcedureInstanceID is empty. PDF will attach to Work Order only.";
       }
       status.textContent =
-        `Upload complete. Check TMS for WorkOrderID=${woField.value} Procedure Readings.`;
+        `Upload complete. Verify Procedure Readings in TMS for WorkOrderID=${woField.value}.`;
     }, 3000);
   });
 </script>
