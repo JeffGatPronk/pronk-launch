@@ -1,5 +1,24 @@
 <!DOCTYPE html>
 <html>
+<script>
+  // Log full launch URL
+  console.log("FULL URL:", window.location.href);
+
+  // Log raw query string
+  console.log("RAW QUERY:", window.location.search);
+
+  // Parse parameters
+  const params = new URLSearchParams(window.location.search);
+
+  console.log("---- TMS PARAMETERS ----");
+  for (const [key, value] of params.entries()) {
+    console.log(key + " =", value);
+  }
+
+  // Optional: expose globally
+  window.TMS_PARAMS = Object.fromEntries(params.entries());
+</script>
+
 <head>
   <meta charset="utf-8">
   <title>Pronk Mobilize Launcher</title>
