@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>TMS Procedure Readings Diagnostic Upload</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { font-weight: bold; }
+    #status { margin-top: 10px; color: green; }
+    #warning { margin-top: 10px; color: #b45309; }
+  </style>
+</head>
+<body>
+
+<h2>TMS Procedure Readings Diagnostic Upload</h2>
+
+<p>
+This page tests which <code>DocumentType</code> routes uploads into
+<strong>Procedure Readings</strong> for your tenant.
+</p>
+
+<form id="uploadForm" target="uploadFrame"
+      action="https://fhbio.stage.tmsonline.com/tms/tmsconnect/fileexchange"
+      method="POST" enctype="multipart/form-data">
+
+  <!-- Fixed Work Order -->
+  <input type="hidden" name="WorkOrderID" value="186494">
+
+  <label for="doctype">DocumentType (test one at a time):</label><br><br>
+  <select name="DocumentType" id="doctype">
+    <option value="ProcedureAttachment">ProcedureAttachment</option>
+    <option value="ProcedureReadings">ProcedureReadings</option>
+    <option value="TestResultAttachment">TestResultAttachment</option>
+    <option value="TestData">TestData</option>
+    <option value="WorkOrderAttachment">WorkOrderAttachment</option>
+  </select>
+  <br><br>
+
+  <input type="hidden" name="Description" value="Pronk Mobilize Diagnostic Upload">
+  <input type="hidden" name="Overwrite" value="false">
+
+  <label>Select PDF:</label><br><br>
+  <input type="file" name="File" id="fileInput" accept=".pdf" required>
+</form>
+
+<iframe name="uploadFrame" style="display:none;"></iframe>
+
+<div id="status"></div>
+<div id="warning"></div>
+
+<script>
+  const fileInput = document.getElementById("fileInput");
+  const form = document.getElementById("uploadForm");
+  const status = document.getElementById("status");
+  const warning = document.getElementById("warning");
+  const doctype = document.getElementById("doctype");
+
+  fileInput.addEventListener("change", () => {
+    status.textContent = `Uploading using DocumentType = ${doctype.value} ...`;
+    warning.textContent = "";
+    form.submit();
+
+    setTimeout(() => {
+      status.textContent =
+        `Upload complete. Check where it landed in TMS for DocumentType = ${doctype.value}.`;
+      warning.textContent =
+        "If it did NOT appear in Procedure Readings, try the next DocumentType.";
+    }, 3000);
+  });
+</script>
+
+</body>
+</html>
