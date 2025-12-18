@@ -49,7 +49,7 @@
     const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
     // --- Build Pronk URL ---
-    const pronkUrl = `pronk://devtype?asset=${asset}&output=json&callback=Openerapp%3A%2F%2Fresult%2Fautotest=${autotest}`;
+   const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest=${autotest}`;
 
     // --- Launch function ---
     function launchPronk() {
