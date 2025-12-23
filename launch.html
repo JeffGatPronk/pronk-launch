@@ -5,7 +5,6 @@
   <title>Pronk Launch</title>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      // Read WorkOrderID from TMS URL query
       const params = new URLSearchParams(window.location.search);
       const wo = params.get("wo");
 
@@ -14,7 +13,7 @@
         return;
       }
 
-      // Trigger the local EXE via custom protocol
+      // Trigger local launcher EXE via protocol
       window.location.href = `pronk-uploader://upload?wo=${encodeURIComponent(wo)}`;
     });
   </script>
