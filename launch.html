@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pronk Relay Launch</title>
+<script>
+/**
+ * Relay HTML for TMS → Local Python Uploader
+ * Works with fully-qualified TMS External Link
+ * Auto-submits to localhost service
+ */
+
+function getQueryParam(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const workOrderID = getQueryParam('wo'); // TMS passes WorkOrderID
+    if (!workOrderID) {
+        alert("Missing Work Order ID from TMS");
+        return;
+    }
+
+    // Local Python listener URL
+    const localURL = `http://127.0.0.1:8765/upload?workorder=${encodeURIComponent(workOrderID)}`;
+
+    // Try to call local service
+    fetch(localURL)
+    .then(response => {
+        if (response.ok) {
+            // Optional: auto-close after success
+            console.log("Local uploader launched successfully.");
+            setTimeout(() => window.close(), 1000);
+        } else {
+            alert(`Local uploader returned error: ${response.status}`);
+        }
+    })
+    .catch(err => {
+        alert("Failed to contact local Python uploader.\nMake sure it is running.\n" + err);
+    });
+});
+</script>
+</head>
+<body>
+<h3>Launching Pronk Local Uploader...</h3>
+<p>If nothing happens, make sure the local Python service is running on port 8765.</p>
+</body>
+</html>
