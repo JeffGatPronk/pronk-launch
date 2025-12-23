@@ -1,39 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Launching Pronk Uploader…</title>
-  <meta charset="utf-8" />
- <script>
-const params = new URLSearchParams(window.location.search);
-const wo = params.get("wo");
-if (wo) {
-    window.location.href = `pronk-uploader://upload?wo=${encodeURIComponent(wo)}`;
-} else {
-    alert("Missing Work Order ID");
-}
-</script>
+  <meta charset="UTF-8">
+  <title>Pronk Launch</title>
   <script>
-    window.onload = () => {
+    window.addEventListener('DOMContentLoaded', () => {
+      // Read WorkOrderID from TMS URL query
       const params = new URLSearchParams(window.location.search);
       const wo = params.get("wo");
 
       if (!wo) {
-        document.body.innerText = "Missing Work Order ID";
+        alert("Missing Work Order ID from TMS!");
         return;
       }
 
-      // Custom protocol call
-      const protocolUrl = `pronk-uploader://upload?wo=${encodeURIComponent(wo)}`;
-
-      // Launch local app
-      window.location.href = protocolUrl;
-
-      // Close launcher tab after a moment
-      setTimeout(() => window.close(), 800);
-    };
+      // Trigger the local EXE via custom protocol
+      window.location.href = `pronk-uploader://upload?wo=${encodeURIComponent(wo)}`;
+    });
   </script>
 </head>
 <body>
-  <p>Launching uploader…</p>
+  <h2>Launching Pronk Uploader...</h2>
 </body>
 </html>
