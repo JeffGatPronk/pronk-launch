@@ -3,6 +3,15 @@
 <head>
   <title>Launching Pronk Uploader…</title>
   <meta charset="utf-8" />
+ <script>
+const params = new URLSearchParams(window.location.search);
+const wo = params.get("wo");
+if (wo) {
+    window.location.href = `pronk-uploader://upload?wo=${encodeURIComponent(wo)}`;
+} else {
+    alert("Missing Work Order ID");
+}
+</script>
   <script>
     window.onload = () => {
       const params = new URLSearchParams(window.location.search);
