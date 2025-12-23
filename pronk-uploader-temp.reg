@@ -5,4 +5,5 @@ Windows Registry Editor Version 5.00
 "URL Protocol"=""
 
 [HKEY_CURRENT_USER\Software\Classes\pronk-uploader\shell\open\command]
-@="\"C:\\Pronk\\Tmsupload\dist\pronk_uploader.exe\" \"%1\""
+@="\"C:\\Pronk\\Tmsupload\dist\launcher.exe\" \"%1\""
+
