@@ -16,9 +16,9 @@ def main():
         print("Missing Work Order ID")
         return
 
-    # Launch GUI in separate process
-    gui_script = os.path.join(os.path.dirname(__file__), "picker_gui.exe")
-    subprocess.Popen([gui_script, workorder])
+    # Launch GUI in a separate detached process
+    gui_exe = os.path.join(os.path.dirname(__file__), "picker_gui.exe")
+    subprocess.Popen([gui_exe, workorder], creationflags=subprocess.DETACHED_PROCESS)
 
 if __name__ == "__main__":
     main()
