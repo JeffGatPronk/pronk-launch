@@ -2,59 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Upload PDF to TMS</title>
-</head>
-<body>
-    <h3>Upload PDF to TMS Procedure Readings</h3>
-    <p>Work Order: <span id="workorder">Unknown</span></p>
-
-    <input type="file" id="pdfFile" accept=".pdf" />
-    <button id="uploadBtn">Upload PDF</button>
-
+    <title>Launch PDF Upload</title>
     <script>
-        // Get WorkOrderID from TMS query parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const workOrderID = urlParams.get("WorkOrderID");
-        document.getElementById("workorder").textContent = workOrderID || "Unknown";
+        // TMS replaces %WorkOrderID% with the actual work order
+        const workOrderID = "%WorkOrderID%";
 
-        const TMS_UPLOAD_URL = "https://fhbio.stage.tmsonline.com/tms/tmsconnect/fileexchange";
-        const TMS_USER = "jgoldstein@pronktech.com";       // replace with TMS credentials or token
-        const TMS_PASS = "Welcome1!";       // replace with TMS credentials or token
-
-        async function uploadPDF() {
-            const fileInput = document.getElementById("pdfFile");
-            if (fileInput.files.length === 0) {
-                alert("Please select a PDF file first.");
-                return;
-            }
-
-            const file = fileInput.files[0];
-            const formData = new FormData();
-            formData.append("File", file);
-            formData.append("WorkOrderID", workOrderID);
-            formData.append("DocumentType", "ProcedureReading");
-
-            try {
-                const response = await fetch(TMS_UPLOAD_URL, {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                        "Authorization": "Basic " + btoa(TMS_USER + ":" + TMS_PASS)
-                    }
-                });
-
-                if (response.ok) {
-                    alert("PDF uploaded successfully!");
-                } else {
-                    const text = await response.text();
-                    alert("Upload failed: " + text);
-                }
-            } catch (err) {
-                alert("Error uploading PDF: " + err);
-            }
+        function openRelay() {
+            // Replace this with your deployed HTTPS relay server
+            const relayUrl = `https://jeffgatpronk.github.io/pronk-launch/fastapi/upload?workorder=${encodeURIComponent(workOrderID)}`;
+            window.open(relayUrl, "_blank");
         }
 
-        document.getElementById("uploadBtn").addEventListener("click", uploadPDF);
+        // Automatically open on page load
+        window.onload = openRelay;
     </script>
+</head>
+<body>
+    <h3>Launching PDF upload for Work Order: <span id="woid">%WorkOrderID%</span></h3>
+    <p>If the page does not open automatically, click <a href="#" onclick="openRelay()">here</a>.</p>
 </body>
 </html>
