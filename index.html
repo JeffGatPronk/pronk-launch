@@ -15,81 +15,84 @@
       cursor: pointer;
     }
     #launchButton:hover { background-color: #005a9e; }
+    pre { text-align: left; max-width: 800px; margin: 20px auto; background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
   </style>
+</head>
+<body>
+  <h2>Pronk Mobilize Launcher</h2>
+  <p>If Pronk does not launch automatically, click the button below:</p>
+  <button id="launchButton">Launch Pronk Mobilize</button>
+
+  <h3>Debug Info:</h3>
+  <pre id="debug"></pre>
+
   <script>
-    // --- Helper: parse TMS query parameters ---
+    // -----------------------------
+    // Helper: get query parameter
+    // -----------------------------
     function getParam(name) {
       const q = window.location.search.substring(1);
       const pairs = q.split('&');
       for (const pair of pairs) {
         const [key, ...rest] = pair.split('=');
-        if (decodeURIComponent(key).trim() === name) {
+        if (decodeURIComponent(key).trim().toLowerCase() === name.toLowerCase()) {
           return decodeURIComponent(rest.join('=')).trim();
         }
       }
       return null;
     }
 
-    // --- Capture WorkOrder, Asset, and optional PDF path ---
-    const WORKORDER_NUMBER = getParam("WorkOrderNumber") || "186496";
-    const ASSET_NUMBER = getParam("AssetID") || "000011";
-    const PDF_PATH = getParam("PDF") || "C:/Users/Public/PronkPDF/test.pdf"; // default save path
+    // -----------------------------
+    // Capture parameters from TMS
+    // -----------------------------
+    const WORKORDER_NUMBER = getParam("WorkOrderNumber") || "";
+    const ASSET_NUMBER     = getParam("AssetID")        || "";
+    const PDF_PATH         = getParam("PDF")            || "";
 
-    console.log("Captured TMS Parameters:", {
-      workorder: WORKORDER_NUMBER,
-      asset: ASSET_NUMBER,
-      pdf: PDF_PATH
-    });
+    const debugEl = document.getElementById("debug");
+    debugEl.textContent = `Captured Parameters:\nWorkOrder: ${WORKORDER_NUMBER}\nAsset: ${ASSET_NUMBER}\nPDF Path: ${PDF_PATH}\n`;
 
-    // --- Launch Pronk Mobilize with autotest (example) ---
-    function launchPronk() {
-      const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500"}';
-      const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&output=pdf&pdfpath=${PDF_PATH}&autotest=${autotest}`;
-      console.log("Launching Pronk:", pronkUrl);
-      window.location.href = pronkUrl;
+    // Validate required parameters
+    if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
+      alert("Missing Asset or Work Order from TMS. Cannot launch.");
+      debugEl.textContent += "\nERROR: Missing required parameters. Launch aborted.";
+      throw new Error("Missing Asset or Work Order from TMS");
     }
 
-    // --- Call EXE to upload PDF to TMS ---
-    async function uploadPDF() {
-      try {
-        // Build arguments
-        const exePath = "C:\\Users\\Public\\PronkUploader\\pronk_uploader.exe";
-        const args = `--workorder "${WORKORDER_NUMBER}" --asset "${ASSET_NUMBER}" --pdf "${PDF_PATH}"`;
+    // -----------------------------
+    // Build autotest string (example)
+    // -----------------------------
+    const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-        // Use ActiveXObject for Windows local execution
-        if (window.ActiveXObject || "ActiveXObject" in window) {
-          const shell = new ActiveXObject("WScript.Shell");
-          console.log("Executing:", `${exePath} ${args}`);
-          shell.Run(`"${exePath}" ${args}`, 1, true); // true = wait until finished
-          alert("✅ PDF uploaded successfully to TMS!");
-        } else {
-          alert("Cannot launch EXE automatically: unsupported browser/security settings.");
-        }
-      } catch (e) {
-        console.error("Error launching EXE:", e);
-        alert("❌ Failed to upload PDF: " + e);
+    // -----------------------------
+    // Build Pronk URL
+    // -----------------------------
+    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&pdfpath=${PDF_PATH}&autotest=${autotest}`;
+    debugEl.textContent += `\nPronk URL:\n${pronkUrl}\n`;
+
+    // -----------------------------
+    // Launch function
+    // -----------------------------
+    function launchPronk() {
+      try {
+        window.location.href = pronkUrl;
+        debugEl.textContent += "\nAttempting to launch Pronk Mobilize...";
+      } catch(e) {
+        console.error("Launch failed:", e);
+        debugEl.textContent += `\nERROR: Launch failed - ${e}`;
       }
     }
 
-    // --- Full workflow ---
-    async function runWorkflow() {
-      launchPronk();
+    // -----------------------------
+    // Bind button
+    // -----------------------------
+    document.getElementById('launchButton').onclick = launchPronk;
 
-      // Wait for PDF generation (adjust milliseconds if needed)
-      const waitTimeMs = 5000;
-      console.log(`Waiting ${waitTimeMs / 1000} seconds for PDF generation...`);
-      setTimeout(uploadPDF, waitTimeMs);
-    }
+    // -----------------------------
+    // Auto-launch on page load
+    // -----------------------------
+    window.onload = launchPronk;
 
-    // --- Bind button ---
-    window.onload = function() {
-      document.getElementById("launchButton").onclick = runWorkflow;
-    };
   </script>
-</head>
-<body>
-  <h2>Pronk Mobilize Launcher</h2>
-  <p>Click below to start test and upload report to TMS:</p>
-  <button id="launchButton">Start Test & Upload PDF</button>
 </body>
 </html>
