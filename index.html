@@ -27,9 +27,7 @@
   <pre id="debug"></pre>
 
   <script>
-    // -----------------------------
     // Helper: get query parameter
-    // -----------------------------
     function getParam(name) {
       const q = window.location.search.substring(1);
       const pairs = q.split('&');
@@ -42,37 +40,26 @@
       return null;
     }
 
-    // -----------------------------
     // Capture parameters from TMS
-    // -----------------------------
     const WORKORDER_NUMBER = getParam("WorkOrderNumber") || "";
     const ASSET_NUMBER     = getParam("AssetID")        || "";
-    const PDF_PATH         = getParam("PDF")            || "";
 
     const debugEl = document.getElementById("debug");
-    debugEl.textContent = `Captured Parameters:\nWorkOrder: ${WORKORDER_NUMBER}\nAsset: ${ASSET_NUMBER}\nPDF Path: ${PDF_PATH}\n`;
+    debugEl.textContent = `Captured Parameters:\nWorkOrder: ${WORKORDER_NUMBER}\nAsset: ${ASSET_NUMBER}\n`;
 
-    // Validate required parameters
     if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
       alert("Missing Asset or Work Order from TMS. Cannot launch.");
       debugEl.textContent += "\nERROR: Missing required parameters. Launch aborted.";
       throw new Error("Missing Asset or Work Order from TMS");
     }
 
-    // -----------------------------
-    // Build autotest string (example)
-    // -----------------------------
+    // Example autotest string
     const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-    // -----------------------------
-    // Build Pronk URL
-    // -----------------------------
-    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&pdfpath=${PDF_PATH}&autotest=${autotest}`;
+    // Build Pronk URL (JSON output only)
+    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&autotest=${autotest}`;
     debugEl.textContent += `\nPronk URL:\n${pronkUrl}\n`;
 
-    // -----------------------------
-    // Launch function
-    // -----------------------------
     function launchPronk() {
       try {
         window.location.href = pronkUrl;
@@ -83,14 +70,7 @@
       }
     }
 
-    // -----------------------------
-    // Bind button
-    // -----------------------------
     document.getElementById('launchButton').onclick = launchPronk;
-
-    // -----------------------------
-    // Auto-launch on page load
-    // -----------------------------
     window.onload = launchPronk;
 
   </script>
