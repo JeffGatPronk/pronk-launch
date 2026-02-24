@@ -1,3 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pronk AutoTest Launcher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 80px;
+            background-color: #f4f6f8;
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: inline-block;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Launching Pronk AutoTest...</h1>
+    <div id="status">Initializing...</div>
+</div>
+
 <script>
-    document.body.innerHTML += "<h3>FULL URL:</h3>" + window.location.href;
+function getParam(name) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
+}
+
+// Capture parameters exactly as TMS sends them
+const ASSET_NUMBER = getParam("Asset ID");
+const WORKORDER_NUMBER = getParam("WO Number");
+
+console.log("Captured Parameters:");
+console.log("WorkOrder:", WORKORDER_NUMBER);
+console.log("Asset:", ASSET_NUMBER);
+
+const statusDiv = document.getElementById("status");
+
+// Validate parameters
+if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
+    statusDiv.innerHTML = "<p class='error'>Missing Asset ID or WO Number from TMS. Launch aborted.</p>";
+} else {
+
+    statusDiv.innerHTML = `
+        <p class='success'>Asset: ${ASSET_NUMBER}</p>
+        <p class='success'>Work Order: ${WORKORDER_NUMBER}</p>
+        <p>Starting Pronk AutoTest...</p>
+    `;
+
+    // Build Pronk URL (JSON required)
+    const pronkUrl = `pronk://autotest?asset=${encodeURIComponent(ASSET_NUMBER)}&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}&output=json`;
+
+    console.log("Launching:", pronkUrl);
+
+    // Small delay for UI update before launch
+    setTimeout(() => {
+        window.location.href = pronkUrl;
+    }, 1000);
+}
 </script>
+
+</body>
+</html>
