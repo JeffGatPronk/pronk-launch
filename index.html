@@ -56,7 +56,7 @@
     const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
 
     // --- Build pronk URL ---
-    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=Openerapp%3A%2F%2Fresult%2F&autotest=${autotest}`;
+    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&autotest=${autotest}`;
     console.log("Pronk URL:", pronkUrl);
 
     // --- Launch Mobilize on button click ---
