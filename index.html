@@ -1,84 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Pronk Mobilize Launcher</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    #launchBtn {
-      padding: 20px 40px;
-      font-size: 18px;
-      background-color: #0078D7;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    #launchBtn:hover { background-color: #005a9e; }
-    #fallback { color: red; margin-top: 20px; display: none; }
-  </style>
+<meta charset="UTF-8">
+<title>Pronk Mobilize Launcher</title>
+<style>
+  body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+  #launchButton {
+    padding: 20px 40px;
+    font-size: 18px;
+    background-color: #0078D7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  #launchButton:hover { background-color: #005a9e; }
+</style>
 </head>
 <body>
-  <h2>Pronk Mobilize Launcher</h2>
-  <p>Click the button below to launch Pronk Mobilize. Ensure the app is installed.</p>
+<h2>Pronk Mobilize Launcher</h2>
+<p>The test should launch automatically. If not, click below:</p>
 
-  <button id="launchBtn">Launch Pronk Mobilize</button>
-  <p id="fallback">Could not launch Mobilize automatically. Please ensure it is installed.</p>
+<button id="launchButton">Launch Pronk Mobilize</button>
 
-  <script>
-    // --- Helper: Get query parameters (supports spaces) ---
-    function getParam(name) {
-      const q = window.location.search.substring(1);
-      const pairs = q.split('&');
-      for (const pair of pairs) {
-        const [key, ...rest] = pair.split('=');
-        if (decodeURIComponent(key).trim() === name) {
-          return decodeURIComponent(rest.join('=')).trim();
-        }
+<script>
+  // --- Helper to parse TMS parameters ---
+  function getParam(name) {
+    const q = window.location.search.substring(1);
+    const pairs = q.split('&');
+    for (const pair of pairs) {
+      const [key, ...rest] = pair.split('=');
+      if (decodeURIComponent(key).trim() === name) {
+        return decodeURIComponent(rest.join('=')).trim();
       }
-      return null;
     }
+    return null;
+  }
 
-    // --- Capture TMS parameters ---
-    const WORKORDER_NUMBER = getParam("WO Number") || "";
-    const ASSET_NUMBER = getParam("Asset ID") || "";
+  // --- Capture WorkOrder and Asset from TMS ---
+  const WORKORDER_NUMBER = getParam("WO Number") || getParam("WorkOrderNumber");
+  const ASSET_NUMBER = getParam("Asset ID") || getParam("AssetID");
 
-    console.log("Captured parameters:");
-    console.log("WorkOrder:", WORKORDER_NUMBER);
-    console.log("Asset:", ASSET_NUMBER);
+  if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
+    alert("Missing Asset or Work Order from TMS. Cannot launch.");
+    throw new Error("Missing required parameters");
+  }
 
-    if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
-      alert("Missing Asset or Work Order from TMS. Cannot launch.");
-      throw new Error("Missing required parameters");
-    }
+  // --- Example autotest JSON ---
+  const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
 
-    // --- Autotest JSON (example) ---
-    const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
+  // --- Build Pronk URL with callback to Python EXE ---
+  const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=pronkexe%3A%2F%2Fresult%2F&autotest=${autotest}`;
 
-    // --- Build pronk URL ---
-    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&autotest=${autotest}`;
-    console.log("Pronk URL:", pronkUrl);
+  function launchPronk() {
+    console.log("Launching Pronk:", pronkUrl);
+    window.location.href = pronkUrl;
+  }
 
-    // --- Launch Mobilize on button click ---
-    const launchBtn = document.getElementById("launchBtn");
-    const fallback = document.getElementById("fallback");
+  document.getElementById('launchButton').onclick = launchPronk;
 
-    launchBtn.addEventListener("click", function() {
-      const iframe = document.createElement("iframe");
-      iframe.style.display = "none";
-      iframe.src = pronkUrl;
-      document.body.appendChild(iframe);
+  // Auto-launch
+  window.onload = launchPronk;
 
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-        fallback.style.display = "block"; // show if Mobilize didn't launch
-      }, 2000);
-    });
-
-    // --- Auto-launch on page load ---
-    window.onload = function() {
-      launchBtn.click();
-    };
+  console.log("WorkOrder:", WORKORDER_NUMBER);
+  console.log("Asset:", ASSET_NUMBER);
+</script>
+</body>
+</html>
   </script>
 </body>
 </html>
