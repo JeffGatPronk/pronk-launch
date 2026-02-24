@@ -57,7 +57,7 @@
     const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
     // Build Pronk URL (JSON output only)
-    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&autotest=${autotest}`;
+    const pronkUrl = `pronk://autotest?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json`;
     debugEl.textContent += `\nPronk URL:\n${pronkUrl}\n`;
 
     function launchPronk() {
