@@ -2,22 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pronk AutoTest Launcher</title>
+<title>Pronk Mobilize Launcher</title>
 <style>
 body { font-family: Arial; text-align: center; padding-top: 80px; }
-button {
-    padding: 15px 30px;
-    font-size: 18px;
-    cursor: pointer;
+button { padding: 15px 30px; font-size: 18px; cursor: pointer; }
+.card {
+    background: #f4f6f8;
+    padding: 40px;
+    border-radius: 8px;
+    display: inline-block;
 }
 </style>
 </head>
 <body>
 
-<h1>Pronk AutoTest Launcher</h1>
-<div id="info"></div>
-<br>
-<button id="launchBtn">Launch Pronk Mobilize</button>
+<div class="card">
+    <h1>Pronk Mobilize Launcher</h1>
+    <div id="info"></div>
+    <br>
+    <button id="launchBtn">Start Test</button>
+</div>
 
 <script>
 function getParam(name) {
@@ -25,6 +29,7 @@ function getParam(name) {
     return params.get(name);
 }
 
+// Capture TMS parameters EXACTLY as passed
 const ASSET_NUMBER = getParam("Asset ID");
 const WORKORDER_NUMBER = getParam("WO Number");
 
@@ -35,15 +40,29 @@ if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
     infoDiv.innerHTML = "<p style='color:red;'>Missing Asset ID or WO Number from TMS.</p>";
     button.disabled = true;
 } else {
+
     infoDiv.innerHTML = `
         <p>Asset: <strong>${ASSET_NUMBER}</strong></p>
         <p>Work Order: <strong>${WORKORDER_NUMBER}</strong></p>
     `;
 
+    // Autotest profile (JSON string)
+    const autotestProfile = `{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}`;
+
+    // Encode callback
+    const callback = encodeURIComponent("Openerapp://result/");
+
+    // Encode autotest JSON
+    const encodedAutotest = encodeURIComponent(autotestProfile);
+
+    // Build final Mobilize URL
     const pronkUrl =
-        `pronk://devtype?asset=t1234&output=json&callback=Openerapp%3A%2F%2Fresult%2F&autotest={"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}
+        `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}`
+        + `&output=json`
+        + `&callback=${callback}`
+        + `&autotest=${encodedAutotest}`;
 
-
+    console.log("Launching:", pronkUrl);
 
     button.addEventListener("click", function() {
         window.location.href = pronkUrl;
