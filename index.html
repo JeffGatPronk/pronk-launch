@@ -1,32 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Pronk AutoTest Launcher</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 80px;
-            background-color: #f4f6f8;
-        }
-        .card {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: inline-block;
-        }
-        .success { color: green; }
-        .error { color: red; }
-    </style>
+<meta charset="UTF-8">
+<title>Pronk AutoTest Launcher</title>
+<style>
+body { font-family: Arial; text-align: center; padding-top: 80px; }
+button {
+    padding: 15px 30px;
+    font-size: 18px;
+    cursor: pointer;
+}
+</style>
 </head>
 <body>
 
-<div class="card">
-    <h1>Launching Pronk AutoTest...</h1>
-    <div id="status">Initializing...</div>
-</div>
+<h1>Pronk AutoTest Launcher</h1>
+<div id="info"></div>
+<br>
+<button id="launchBtn">Launch Pronk Mobilize</button>
 
 <script>
 function getParam(name) {
@@ -34,36 +25,27 @@ function getParam(name) {
     return params.get(name);
 }
 
-// Capture parameters exactly as TMS sends them
 const ASSET_NUMBER = getParam("Asset ID");
 const WORKORDER_NUMBER = getParam("WO Number");
 
-console.log("Captured Parameters:");
-console.log("WorkOrder:", WORKORDER_NUMBER);
-console.log("Asset:", ASSET_NUMBER);
+const infoDiv = document.getElementById("info");
+const button = document.getElementById("launchBtn");
 
-const statusDiv = document.getElementById("status");
-
-// Validate parameters
 if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
-    statusDiv.innerHTML = "<p class='error'>Missing Asset ID or WO Number from TMS. Launch aborted.</p>";
+    infoDiv.innerHTML = "<p style='color:red;'>Missing Asset ID or WO Number from TMS.</p>";
+    button.disabled = true;
 } else {
-
-    statusDiv.innerHTML = `
-        <p class='success'>Asset: ${ASSET_NUMBER}</p>
-        <p class='success'>Work Order: ${WORKORDER_NUMBER}</p>
-        <p>Starting Pronk AutoTest...</p>
+    infoDiv.innerHTML = `
+        <p>Asset: <strong>${ASSET_NUMBER}</strong></p>
+        <p>Work Order: <strong>${WORKORDER_NUMBER}</strong></p>
     `;
 
-    // Build Pronk URL (JSON required)
-    const pronkUrl = `pronk://autotest?asset=${encodeURIComponent(ASSET_NUMBER)}&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}&output=json`;
+    const pronkUrl =
+        `pronk://autotest?asset=${encodeURIComponent(ASSET_NUMBER)}&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}&output=json`;
 
-    console.log("Launching:", pronkUrl);
-
-    // Small delay for UI update before launch
-    setTimeout(() => {
+    button.addEventListener("click", function() {
         window.location.href = pronkUrl;
-    }, 1000);
+    });
 }
 </script>
 
