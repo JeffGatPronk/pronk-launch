@@ -41,7 +41,7 @@ if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
     `;
 
     const pronkUrl =
-        `pronk://autotest?asset=${encodeURIComponent(ASSET_NUMBER)}&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}&output=json&autotest={"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}`;
+        `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}&output=json&callback=Openerapp%3A%2F%2Fresult%2F&autotest={"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}
 
     button.addEventListener("click", function() {
         window.location.href = pronkUrl;
