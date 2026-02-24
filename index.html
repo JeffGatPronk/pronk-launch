@@ -50,7 +50,7 @@
   const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
 
   // --- Build Pronk URL with callback to Python EXE ---
-  const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=pronkexe%3A%2F%2Fresult%2F&autotest=${autotest}`;
+  const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=pronk_uploader.exe%3A%2F%2Fresult%2F&autotest=${autotest}`;
 
   function launchPronk() {
     console.log("Launching Pronk:", pronkUrl);
