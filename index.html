@@ -1,30 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script>
-  // Log full launch URL
-  console.log("FULL URL:", window.location.href);
-
-  // Log raw query string
-  console.log("RAW QUERY:", window.location.search);
-
-  // Parse parameters
-  const params = new URLSearchParams(window.location.search);
-
-  console.log("---- TMS PARAMETERS ----");
-  for (const [key, value] of params.entries()) {
-    console.log(key + " =", value);
-  }
-
-  // Optional: expose globally
-  window.TMS_PARAMS = Object.fromEntries(params.entries());
-</script>
-
-
   <meta charset="utf-8">
   <title>Pronk Mobilize Launcher</title>
+
   <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 60px;
+    }
+
     #launchButton {
       padding: 20px 40px;
       font-size: 18px;
@@ -34,20 +20,26 @@
       border-radius: 8px;
       cursor: pointer;
     }
-    #launchButton:hover { background-color: #005a9e; }
-  </style>
-</head>
-<body>
-  <h2>Pronk Mobilize Launcher</h2>
-  <p>The test should launch automatically. If not, click the button below:</p>
 
-  <button id="launchButton">Launch Pronk Mobilize</button>
+    #launchButton:hover {
+      background-color: #005a9e;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
 
   <script>
-    // --- Helper to get TMS query parameters (supports spaces in field names) ---
+    console.log("FULL URL:", window.location.href);
+    console.log("RAW QUERY:", window.location.search);
+
     function getParam(name) {
       const q = window.location.search.substring(1);
       const pairs = q.split('&');
+
       for (const pair of pairs) {
         const [key, ...rest] = pair.split('=');
         if (decodeURIComponent(key).trim() === name) {
@@ -57,38 +49,79 @@
       return null;
     }
 
-    // --- Dynamic Asset from TMS ---
     const asset =
       getParam("Asset ID") ||
       getParam("AssetID") ||
       getParam("assetid") ||
-      getParam("asset_number") ||
-      "t1234";
+      getParam("asset_number");
 
-    // --- Literal autotest block ---
+    const workOrder =
+      getParam("Work Order") ||
+      getParam("WorkOrder") ||
+      getParam("WorkOrderNumber") ||
+      getParam("wo");
+
+    console.log("---- TMS PARAMETERS ----");
+    console.log("Asset =", asset);
+    console.log("WorkOrder =", workOrder);
+
+    window.TMS_PARAMS = {
+      asset: asset,
+      workOrder: workOrder
+    };
+
     const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-    // --- Build Pronk URL ---
-   const pronkUrl = `pronk://devtype?asset=${asset}&output=json&autotest=${autotest}`;
+    let pronkUrl = null;
 
-    // --- Launch function ---
+    function buildPronkUrl() {
+      if (!asset || !workOrder) {
+        document.getElementById("status").innerText =
+          "Missing Asset or Work Order from TMS. Cannot launch.";
+        console.error("Missing required parameters.");
+        return null;
+      }
+
+      return `pronk://devtype?asset=${encodeURIComponent(asset)}&wo=${encodeURIComponent(workOrder)}&output=json&autotest=${encodeURIComponent(autotest)}`;
+    }
+
     function launchPronk() {
+      if (!pronkUrl) {
+        pronkUrl = buildPronkUrl();
+      }
+
+      if (!pronkUrl) return;
+
+      console.log("Launching:", pronkUrl);
+
       try {
-        window.location.href = pronkUrl; // reliably sends parameters
-      } catch(e) {
+        window.location.href = pronkUrl;
+      } catch (e) {
         console.error("Launch failed:", e);
       }
     }
 
-    // --- Bind button ---
-    document.getElementById('launchButton').onclick = launchPronk;
-
-    // --- Auto-launch on page load ---
     window.onload = function() {
-      launchPronk();
-    };
+      pronkUrl = buildPronkUrl();
 
-    console.log("Pronk URL:", pronkUrl);
+      if (pronkUrl) {
+        document.getElementById("status").innerText =
+          "Launching Pronk Mobilize...";
+        setTimeout(launchPronk, 500);
+      }
+    };
   </script>
+</head>
+
+<body>
+  <h2>Pronk Mobilize Launcher</h2>
+
+  <p>If the test does not launch automatically, click below:</p>
+
+  <button id="launchButton" onclick="launchPronk()">
+    Launch Pronk Mobilize
+  </button>
+
+  <div id="status"></div>
 </body>
 </html>
