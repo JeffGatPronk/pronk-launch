@@ -1,74 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Pronk Mobilize Launcher</title>
-<style>
-body { font-family: Arial; text-align: center; padding-top: 80px; }
-button { padding: 15px 30px; font-size: 18px; cursor: pointer; }
-.card {
-    background: #f4f6f8;
-    padding: 40px;
-    border-radius: 8px;
-    display: inline-block;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>Pronk Mobilize Launcher</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    #launchBtn {
+      padding: 20px 40px;
+      font-size: 18px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #launchBtn:hover { background-color: #005a9e; }
+    #fallback { color: red; margin-top: 20px; display: none; }
+  </style>
 </head>
 <body>
+  <h2>Pronk Mobilize Launcher</h2>
+  <p>Click the button below to launch Pronk Mobilize. Ensure the app is installed.</p>
 
-<div class="card">
-    <h1>Pronk Mobilize Launcher</h1>
-    <div id="info"></div>
-    <br>
-    <button id="launchBtn">Start Test</button>
-</div>
+  <button id="launchBtn">Launch Pronk Mobilize</button>
+  <p id="fallback">Could not launch Mobilize automatically. Please ensure it is installed.</p>
 
-<script>
-function getParam(name) {
-    const params = new URLSearchParams(window.location.search);
-    return params.get(name);
-}
+  <script>
+    // --- Helper: Get query parameters (supports spaces) ---
+    function getParam(name) {
+      const q = window.location.search.substring(1);
+      const pairs = q.split('&');
+      for (const pair of pairs) {
+        const [key, ...rest] = pair.split('=');
+        if (decodeURIComponent(key).trim() === name) {
+          return decodeURIComponent(rest.join('=')).trim();
+        }
+      }
+      return null;
+    }
 
-// Capture TMS parameters EXACTLY as passed
-const ASSET_NUMBER = getParam("Asset ID");
-const WORKORDER_NUMBER = getParam("WO Number");
+    // --- Capture TMS parameters ---
+    const WORKORDER_NUMBER = getParam("WO Number") || "";
+    const ASSET_NUMBER = getParam("Asset ID") || "";
 
-const infoDiv = document.getElementById("info");
-const button = document.getElementById("launchBtn");
+    console.log("Captured parameters:");
+    console.log("WorkOrder:", WORKORDER_NUMBER);
+    console.log("Asset:", ASSET_NUMBER);
 
-if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
-    infoDiv.innerHTML = "<p style='color:red;'>Missing Asset ID or WO Number from TMS.</p>";
-    button.disabled = true;
-} else {
+    if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
+      alert("Missing Asset or Work Order from TMS. Cannot launch.");
+      throw new Error("Missing required parameters");
+    }
 
-    infoDiv.innerHTML = `
-        <p>Asset: <strong>${ASSET_NUMBER}</strong></p>
-        <p>Work Order: <strong>${WORKORDER_NUMBER}</strong></p>
-    `;
+    // --- Autotest JSON (example) ---
+    const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
 
-    // Autotest profile (JSON string)
-    const autotestProfile = `{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}`;
+    // --- Build pronk URL ---
+    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=Openerapp%3A%2F%2Fresult%2F&autotest=${autotest}`;
+    console.log("Pronk URL:", pronkUrl);
 
-    // Encode callback
-    const callback = encodeURIComponent("Openerapp://result/");
+    // --- Launch Mobilize on button click ---
+    const launchBtn = document.getElementById("launchBtn");
+    const fallback = document.getElementById("fallback");
 
-    // Encode autotest JSON
-    const encodedAutotest = encodeURIComponent(autotestProfile);
+    launchBtn.addEventListener("click", function() {
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = pronkUrl;
+      document.body.appendChild(iframe);
 
-    // Build final Mobilize URL
-    const pronkUrl =
-        `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}`
-        + `&output=json`
-        + `&callback=${callback}`
-        + `&autotest=${encodedAutotest}`;
-
-    console.log("Launching:", pronkUrl);
-
-    button.addEventListener("click", function() {
-        window.location.href = pronkUrl;
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+        fallback.style.display = "block"; // show if Mobilize didn't launch
+      }, 2000);
     });
-}
-</script>
 
+    // --- Auto-launch on page load ---
+    window.onload = function() {
+      launchBtn.click();
+    };
+  </script>
 </body>
 </html>
