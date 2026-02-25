@@ -25,7 +25,7 @@ body { font-family: sans-serif; text-align: center; margin-top: 50px; }
 
 <script>
 // -----------------------------
-// Parse TMS parameters robustly
+// Helper: Get TMS parameters robustly
 // -----------------------------
 function getParam(name) {
     const query = window.location.search.substring(1);
@@ -55,14 +55,16 @@ if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
 }
 
 // -----------------------------
-// Build autotest JSON (example)
+// Autotest JSON (example placeholder)
 // -----------------------------
-const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
+const autotestJSON = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
+const autotestEncoded = encodeURIComponent(autotestJSON);
 
 // -----------------------------
-// Build Pronk URL
+// Build Pronk cheatcode URL
 // -----------------------------
-const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=pronkexe://result/&autotest=${autotest}`;
+const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=pronkexe://result/&autotest=${autotestEncoded}`;
+
 console.log("Pronk URL:", pronkUrl);
 
 // -----------------------------
