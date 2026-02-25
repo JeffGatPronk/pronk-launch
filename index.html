@@ -61,12 +61,12 @@ const autotestEncoded = encodeURIComponent(autotestJSON);
 // -----------------------------
 // Encode callback URL for Mobilize
 // -----------------------------
-const callbackURL = encodeURIComponent(`pronkexe://result/?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}`);
+const callbackURL = encodeURIComponent(`pronkexe://result/?workOrder=${WORKORDER_NUMBER}`);
 
 // -----------------------------
 // Build Pronk cheatcode URL
 // -----------------------------
-const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=${callbackURL}&autotest=${autotestEncoded}`;
+const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&callback=${callbackURL}&autotest=${autotestEncoded}`;
 
 alert(pronkUrl);
 
