@@ -1,67 +1,80 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Pronk Mobilize Launcher</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    #launchButton {
-      padding: 20px 40px;
-      font-size: 18px;
-      background-color: #0078D7;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    #launchButton:hover { background-color: #005a9e; }
-  </style>
+<meta charset="utf-8">
+<title>Pronk Mobilize Launcher</title>
+<style>
+  body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+  #launchButton, #uploaderButton {
+    padding: 15px 30px;
+    font-size: 16px;
+    margin: 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+  #launchButton { background-color: #0078D7; color: white; }
+  #launchButton:hover { background-color: #005a9e; }
+  #uploaderButton { background-color: #28a745; color: white; }
+  #uploaderButton:hover { background-color: #1c7c31; }
+</style>
 </head>
 <body>
-  <h2>Pronk Mobilize Launcher</h2>
-  <p>Click the button below to launch the test:</p>
-  <button id="launchButton">Launch Pronk Mobilize</button>
 
-  <script>
-    function getParam(name) {
-      const q = window.location.search.substring(1);
-      const pairs = q.split('&');
-      for (const pair of pairs) {
-        const [key, ...rest] = pair.split('=');
-        if (decodeURIComponent(key).trim() === name) {
-          return decodeURIComponent(rest.join('=')).trim();
-        }
-      }
-      return null;
-    }
+<h2>Pronk Mobilize Launcher</h2>
+<p>Launch will occur automatically. If not, use the buttons below.</p>
 
-    const ASSET_NUMBER = getParam("Asset ID") || getParam("AssetID") || "000011";
-    const WORKORDER_NUMBER = getParam("WO Number") || getParam("WorkOrderNumber") || "186496";
+<button id="launchButton">Launch Pronk Mobilize</button>
+<button id="uploaderButton">Run Uploader (Fallback)</button>
 
-    if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
-      alert("Missing Asset or Work Order from TMS. Cannot launch.");
-      throw new Error("Missing required parameters");
-    }
-
-    const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
-
-    const callbackUrl = "pronkexe://result/";
-
-    const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=${callbackUrl}&autotest=${encodeURIComponent(autotest)}`;
-
-    function launchPronk() {
-      try {
-        window.location.href = pronkUrl;
-        console.log("Launching Mobilize with URL:", pronkUrl);
-      } catch(e) {
-        console.error("Failed to launch Pronk Mobilize:", e);
+<script>
+  function getParam(name) {
+    const q = window.location.search.substring(1);
+    const pairs = q.split('&');
+    for (const pair of pairs) {
+      const [key, ...rest] = pair.split('=');
+      if (decodeURIComponent(key).trim() === name) {
+        return decodeURIComponent(rest.join('=')).trim();
       }
     }
+    return null;
+  }
 
-    document.getElementById('launchButton').onclick = launchPronk;
+  const ASSET_NUMBER = getParam("Asset ID") || getParam("AssetID") || "000011";
+  const WORKORDER_NUMBER = getParam("WO Number") || getParam("WorkOrderNumber") || "186496";
 
-    // Auto-launch on page load
-    window.onload = launchPronk;
-  </script>
+  if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
+    alert("Missing Asset or Work Order from TMS. Cannot launch.");
+    throw new Error("Missing required parameters.");
+  }
+
+  // Example autotest JSON
+  const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
+
+  // Build Pronk Mobilize URL
+  const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=pronkexe://result/&autotest=${autotest}`;
+
+  function launchMobilize() {
+    console.log("Launching Mobilize:", pronkUrl);
+    window.location.href = pronkUrl;
+  }
+
+  // Bind launch button
+  document.getElementById("launchButton").onclick = launchMobilize;
+
+  // Fallback: Run Uploader manually via custom protocol
+  function runUploader() {
+    const uploaderUrl = `pronkexe://result/?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}`;
+    console.log("Calling uploader:", uploaderUrl);
+    window.location.href = uploaderUrl;
+  }
+  document.getElementById("uploaderButton").onclick = runUploader;
+
+  // Auto-launch Mobilize on page load
+  window.onload = launchMobilize;
+
+  console.log("Captured parameters:", { ASSET_NUMBER, WORKORDER_NUMBER });
+</script>
+
 </body>
 </html>
