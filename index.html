@@ -19,7 +19,7 @@ body { font-family: sans-serif; text-align: center; margin-top: 50px; }
 </head>
 <body>
 <h2>Pronk Mobilize Launcher</h2>
-<p>The test should launch automatically. If not, click the button below:</p>
+<p>Click the button below to launch the test in Mobilize:</p>
 
 <button id="launchButton">Launch Pronk Mobilize</button>
 
@@ -45,9 +45,7 @@ function getParam(name) {
 const WORKORDER_NUMBER = getParam("WO Number") || getParam("WorkOrderNumber") || "";
 const ASSET_NUMBER = getParam("Asset ID") || getParam("AssetID") || "";
 
-console.log("Captured Parameters:");
-console.log("WorkOrder:", WORKORDER_NUMBER);
-console.log("Asset:", ASSET_NUMBER);
+console.log("Captured Parameters:", WORKORDER_NUMBER, ASSET_NUMBER);
 
 if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
     alert("Missing Asset or Work Order from TMS. Cannot launch.");
@@ -55,37 +53,33 @@ if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
 }
 
 // -----------------------------
-// Autotest JSON (example placeholder)
+// Autotest JSON example
 // -----------------------------
 const autotestJSON = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
 const autotestEncoded = encodeURIComponent(autotestJSON);
 
 // -----------------------------
+// Encode callback URL for Mobilize
+// -----------------------------
+const callbackURL = encodeURIComponent(`pronkexe://result/?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}`);
+
+// -----------------------------
 // Build Pronk cheatcode URL
 // -----------------------------
-const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=pronkexe://result/&autotest=${autotestEncoded}`;
+const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=${callbackURL}&autotest=${autotestEncoded}`;
 
 console.log("Pronk URL:", pronkUrl);
 
 // -----------------------------
-// Auto-launch Mobilize on page load
-// -----------------------------
-window.onload = function() {
-    try {
-        window.location.href = pronkUrl;
-    } catch(e) {
-        console.error("Failed to launch Pronk:", e);
-    }
-};
-
-// -----------------------------
-// Fallback button click
+// Button click launches Mobilize
 // -----------------------------
 document.getElementById('launchButton').onclick = function() {
     try {
+        // Open in the same window to ensure protocol works
         window.location.href = pronkUrl;
     } catch(e) {
         console.error("Failed to launch Pronk:", e);
+        alert("Failed to launch Mobilize. Check browser or registry.");
     }
 };
 </script>
