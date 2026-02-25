@@ -4,17 +4,17 @@
 <meta charset="utf-8">
 <title>Pronk Mobilize Launcher</title>
 <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    #launchButton {
-        padding: 20px 40px;
-        font-size: 18px;
-        background-color: #0078D7;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-    }
-    #launchButton:hover { background-color: #005a9e; }
+body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+#launchButton {
+    padding: 20px 40px;
+    font-size: 18px;
+    background-color: #0078D7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+#launchButton:hover { background-color: #005a9e; }
 </style>
 </head>
 <body>
@@ -24,76 +24,68 @@
 <button id="launchButton">Launch Pronk Mobilize</button>
 
 <script>
-    // -----------------------------
-    // Helper to capture TMS query parameters (case-insensitive, spaces handled)
-    // -----------------------------
-    function getParam(name) {
-        const params = new URLSearchParams(window.location.search);
-        for (const [key, value] of params.entries()) {
-            if (key.trim().toLowerCase() === name.trim().toLowerCase()) {
-                return decodeURIComponent(value);
-            }
+// -----------------------------
+// Parse TMS parameters robustly
+// -----------------------------
+function getParam(name) {
+    const query = window.location.search.substring(1);
+    const pairs = query.split('&');
+    for (const pair of pairs) {
+        const [key, ...rest] = pair.split('=');
+        if (decodeURIComponent(key).trim().toLowerCase() === name.trim().toLowerCase()) {
+            return decodeURIComponent(rest.join('=')).trim();
         }
-        return null;
     }
+    return null;
+}
 
-    // -----------------------------
-    // Capture WorkOrder and Asset
-    // -----------------------------
-    const WORKORDER_NUMBER =
-        getParam("WO Number") ||
-        getParam("WorkOrderNumber") ||
-        getParam("workOrder") ||
-        getParam("workorder") ||
-        "";
+// -----------------------------
+// Capture WorkOrder and Asset
+// -----------------------------
+const WORKORDER_NUMBER = getParam("WO Number") || getParam("WorkOrderNumber") || "";
+const ASSET_NUMBER = getParam("Asset ID") || getParam("AssetID") || "";
 
-    const ASSET_NUMBER =
-        getParam("Asset ID") ||
-        getParam("AssetID") ||
-        getParam("asset") ||
-        "";
+console.log("Captured Parameters:");
+console.log("WorkOrder:", WORKORDER_NUMBER);
+console.log("Asset:", ASSET_NUMBER);
 
-    console.log("Captured Parameters:");
-    console.log("WorkOrder:", WORKORDER_NUMBER);
-    console.log("Asset:", ASSET_NUMBER);
+if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
+    alert("Missing Asset or Work Order from TMS. Cannot launch.");
+    throw new Error("Missing required parameters.");
+}
 
-    if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
-        alert("Missing Asset or Work Order from TMS. Cannot launch.");
-        throw new Error("Missing required parameters.");
+// -----------------------------
+// Build autotest JSON (example)
+// -----------------------------
+const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
+
+// -----------------------------
+// Build Pronk URL
+// -----------------------------
+const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=pronkexe://result/&autotest=${autotest}`;
+console.log("Pronk URL:", pronkUrl);
+
+// -----------------------------
+// Auto-launch Mobilize on page load
+// -----------------------------
+window.onload = function() {
+    try {
+        window.location.href = pronkUrl;
+    } catch(e) {
+        console.error("Failed to launch Pronk:", e);
     }
+};
 
-    // -----------------------------
-    // Build autotest JSON (example)
-    // -----------------------------
-    const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
-
-    // -----------------------------
-    // Build Pronk URL
-    // -----------------------------
-    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=pronkexe://result/&autotest=${autotest}`;
-    console.log("Pronk URL:", pronkUrl);
-
-    // -----------------------------
-    // Auto-launch Mobilize on page load
-    // -----------------------------
-    window.onload = function() {
-        try {
-            window.location.href = pronkUrl;
-        } catch(e) {
-            console.error("Failed to launch Pronk:", e);
-        }
-    };
-
-    // -----------------------------
-    // Fallback button click
-    // -----------------------------
-    document.getElementById('launchButton').onclick = function() {
-        try {
-            window.location.href = pronkUrl;
-        } catch(e) {
-            console.error("Failed to launch Pronk:", e);
-        }
-    };
+// -----------------------------
+// Fallback button click
+// -----------------------------
+document.getElementById('launchButton').onclick = function() {
+    try {
+        window.location.href = pronkUrl;
+    } catch(e) {
+        console.error("Failed to launch Pronk:", e);
+    }
+};
 </script>
 </body>
 </html>
