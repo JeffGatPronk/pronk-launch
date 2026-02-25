@@ -1,80 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<title>Pronk Mobilize Launcher</title>
-<style>
-  body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-  #launchButton, #uploaderButton {
-    padding: 15px 30px;
-    font-size: 16px;
-    margin: 10px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-  }
-  #launchButton { background-color: #0078D7; color: white; }
-  #launchButton:hover { background-color: #005a9e; }
-  #uploaderButton { background-color: #28a745; color: white; }
-  #uploaderButton:hover { background-color: #1c7c31; }
-</style>
+    <title>Launch Pronk Mobilize</title>
 </head>
 <body>
+    <h2>Launching Pronk Mobilize...</h2>
 
-<h2>Pronk Mobilize Launcher</h2>
-<p>Launch will occur automatically. If not, use the buttons below.</p>
+    <script>
+        // === READ PARAMETERS FROM TMS URL ===
+        const params = new URLSearchParams(window.location.search);
+        const ASSET_NUMBER = params.get("asset");
+        const WORKORDER_NUMBER = params.get("workOrder");
 
-<button id="launchButton">Launch Pronk Mobilize</button>
-<button id="uploaderButton">Run Uploader (Fallback)</button>
+        if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
+            document.body.innerHTML = "<h3 style='color:red;'>Missing asset or workOrder parameter</h3>";
+            console.error("Missing parameters:", window.location.search);
+        } else {
 
-<script>
-  function getParam(name) {
-    const q = window.location.search.substring(1);
-    const pairs = q.split('&');
-    for (const pair of pairs) {
-      const [key, ...rest] = pair.split('=');
-      if (decodeURIComponent(key).trim() === name) {
-        return decodeURIComponent(rest.join('=')).trim();
-      }
-    }
-    return null;
-  }
+            // === BUILD CALLBACK URL (DO NOT ENCODE) ===
+            const callbackUrl = `pronkexe://result/?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}`;
 
-  const ASSET_NUMBER = getParam("Asset ID") || getParam("AssetID") || "000011";
-  const WORKORDER_NUMBER = getParam("WO Number") || getParam("WorkOrderNumber") || "186496";
+            // === BUILD PRONK LAUNCH URL ===
+            const autotest = "true";  // change if needed
 
-  if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
-    alert("Missing Asset or Work Order from TMS. Cannot launch.");
-    throw new Error("Missing required parameters.");
-  }
+            const pronkUrl =
+                `pronk://devtype?asset=${ASSET_NUMBER}` +
+                `&workOrder=${WORKORDER_NUMBER}` +
+                `&output=json` +
+                `&callback=${callbackUrl}` +
+                `&autotest=${autotest}`;
 
-  // Example autotest JSON
-  const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
+            // === DEBUG LOGGING ===
+            console.log("ASSET:", ASSET_NUMBER);
+            console.log("WORK ORDER:", WORKORDER_NUMBER);
+            console.log("CALLBACK URL:", callbackUrl);
+            console.log("LAUNCHING PRONK URL:", pronkUrl);
 
-  // Build Pronk Mobilize URL
-  const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=pronkexe://result/&autotest=${autotest}`;
-
-  function launchMobilize() {
-    console.log("Launching Mobilize:", pronkUrl);
-    window.location.href = pronkUrl;
-  }
-
-  // Bind launch button
-  document.getElementById("launchButton").onclick = launchMobilize;
-
-  // Fallback: Run Uploader manually via custom protocol
-  function runUploader() {
-    const uploaderUrl = `pronkexe://result/?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}`;
-    console.log("Calling uploader:", uploaderUrl);
-    window.location.href = uploaderUrl;
-  }
-  document.getElementById("uploaderButton").onclick = runUploader;
-
-  // Auto-launch Mobilize on page load
-  window.onload = launchMobilize;
-
-  console.log("Captured parameters:", { ASSET_NUMBER, WORKORDER_NUMBER });
-</script>
-
+            // === LAUNCH MOBILIZE ===
+            window.location.href = pronkUrl;
+        }
+    </script>
 </body>
 </html>
