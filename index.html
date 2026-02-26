@@ -26,73 +26,60 @@
   <h3>Debug Info:</h3>
   <pre id="debug"></pre>
 
-  <script>
-    // -----------------------------
-    // Helper: get query parameter
-    // -----------------------------
+ <script>
+    // --- Helper: Get query parameters (supports spaces) ---
     function getParam(name) {
       const q = window.location.search.substring(1);
       const pairs = q.split('&');
       for (const pair of pairs) {
         const [key, ...rest] = pair.split('=');
-        if (decodeURIComponent(key).trim().toLowerCase() === name.toLowerCase()) {
+        if (decodeURIComponent(key).trim() === name) {
           return decodeURIComponent(rest.join('=')).trim();
         }
       }
       return null;
     }
 
-    // -----------------------------
-    // Capture parameters from TMS
-    // -----------------------------
+    // --- Capture TMS parameters ---
     const WORKORDER_NUMBER = getParam("WO Number") || "";
-    const ASSET_NUMBER     = getParam("Asset ID")        || "";
-    const PDF_PATH         = getParam("PDF")            || "";
+    const ASSET_NUMBER = getParam("Asset ID") || "";
 
-    const debugEl = document.getElementById("debug");
-    debugEl.textContent = `Captured Parameters:\nWorkOrder: ${WORKORDER_NUMBER}\nAsset: ${ASSET_NUMBER}\nPDF Path: ${PDF_PATH}\n`;
+    console.log("Captured parameters:");
+    console.log("WorkOrder:", WORKORDER_NUMBER);
+    console.log("Asset:", ASSET_NUMBER);
 
-    // Validate required parameters
     if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
       alert("Missing Asset or Work Order from TMS. Cannot launch.");
-      debugEl.textContent += "\nERROR: Missing required parameters. Launch aborted.";
-      throw new Error("Missing Asset or Work Order from TMS");
+      throw new Error("Missing required parameters");
     }
 
-    // -----------------------------
-    // Build autotest string (example)
-    // -----------------------------
-    const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+    // --- Autotest JSON (example) ---
+    const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
 
-    // -----------------------------
-    // Build Pronk URL
-    // -----------------------------
-    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&pdfpath=${PDF_PATH}&autotest=${autotest}`;
-    debugEl.textContent += `\nPronk URL:\n${pronkUrl}\n`;
+    // --- Build pronk URL ---
+    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=Openerapp%3A%2F%2Fresult%2F&autotest=${autotest}`;
+    console.log("Pronk URL:", pronkUrl);
 
-    // -----------------------------
-    // Launch function
-    // -----------------------------
-    function launchPronk() {
-      try {
-        window.location.href = pronkUrl;
-        debugEl.textContent += "\nAttempting to launch Pronk Mobilize...";
-      } catch(e) {
-        console.error("Launch failed:", e);
-        debugEl.textContent += `\nERROR: Launch failed - ${e}`;
-      }
-    }
+    // --- Launch Mobilize on button click ---
+    const launchBtn = document.getElementById("launchBtn");
+    const fallback = document.getElementById("fallback");
 
-    // -----------------------------
-    // Bind button
-    // -----------------------------
-    document.getElementById('launchButton').onclick = launchPronk;
+    launchBtn.addEventListener("click", function() {
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = pronkUrl;
+      document.body.appendChild(iframe);
 
-    // -----------------------------
-    // Auto-launch on page load
-    // -----------------------------
-    window.onload = launchPronk;
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+        fallback.style.display = "block"; // show if Mobilize didn't launch
+      }, 2000);
+    });
 
+    // --- Auto-launch on page load ---
+    window.onload = function() {
+      launchBtn.click();
+    };
   </script>
 </body>
 </html>
