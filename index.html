@@ -55,18 +55,18 @@ if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
 // -----------------------------
 // Autotest JSON example
 // -----------------------------
-const autotestJSON = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
-const autotestEncoded = encodeURIComponent(autotestJSON);
+//const autotestJSON = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
+//const autotestEncoded = encodeURIComponent(autotestJSON);
 
 // -----------------------------
 // Encode callback URL for Mobilize
 // -----------------------------
-const callbackURL = encodeURIComponent(`pronkexe://result/?workOrder=${WORKORDER_NUMBER}`);
+const callbackURL = encodeURIComponent(`pronkexe%3A%2F%2Fresult%2F?workOrder=${WORKORDER_NUMBER}`);
 
 // -----------------------------
 // Build Pronk cheatcode URL
 // -----------------------------
-const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&callback=pronkexe%3A%2F%2Fresult%2F`;
+const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&callback=${callbackURL}`;
 
 
 
