@@ -15,24 +15,27 @@
       cursor: pointer;
     }
     #launchButton:hover { background-color: #005a9e; }
+    pre { text-align: left; max-width: 800px; margin: 20px auto; background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
   </style>
 </head>
 <body>
   <h2>Pronk Mobilize Launcher</h2>
-  <p>The test should launch automatically. If not, click the button below:</p>
-
+  <p>If Pronk does not launch automatically, click the button below:</p>
   <button id="launchButton">Launch Pronk Mobilize</button>
+
+  <h3>Debug Info:</h3>
+  <pre id="debug"></pre>
 
   <script>
     // -----------------------------
-    // Helper: parse query string
+    // Helper: get query parameter
     // -----------------------------
     function getParam(name) {
       const q = window.location.search.substring(1);
       const pairs = q.split('&');
       for (const pair of pairs) {
         const [key, ...rest] = pair.split('=');
-        if (decodeURIComponent(key).trim() === name) {
+        if (decodeURIComponent(key).trim().toLowerCase() === name.toLowerCase()) {
           return decodeURIComponent(rest.join('=')).trim();
         }
       }
@@ -40,37 +43,43 @@
     }
 
     // -----------------------------
-    // Get TMS parameters (required)
+    // Capture parameters from TMS
     // -----------------------------
-    const WORKORDER_NUMBER = getParam("WorkOrderNumber");
-    const ASSET_NUMBER = getParam("AssetID");
-    const PDF_URL = getParam("PDF"); // optional if you want pre-selected PDF
+    const WORKORDER_NUMBER = getParam("WorkOrderNumber") || "";
+    const ASSET_NUMBER     = getParam("AssetID")        || "";
+    const PDF_PATH         = getParam("PDF")            || "";
 
+    const debugEl = document.getElementById("debug");
+    debugEl.textContent = `Captured Parameters:\nWorkOrder: ${WORKORDER_NUMBER}\nAsset: ${ASSET_NUMBER}\nPDF Path: ${PDF_PATH}\n`;
+
+    // Validate required parameters
     if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
-      alert("ERROR: Missing required TMS parameters (WorkOrderNumber or AssetID).");
-      console.error("Missing WorkOrderNumber or AssetID in query parameters.");
-      throw new Error("Missing required TMS parameters.");
+      alert("Missing Asset or Work Order from TMS. Cannot launch.");
+      debugEl.textContent += "\nERROR: Missing required parameters. Launch aborted.";
+      throw new Error("Missing Asset or Work Order from TMS");
     }
 
     // -----------------------------
-    // Autotest JSON (example)
+    // Build autotest string (example)
     // -----------------------------
-    const AUTOTEST = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+    const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
     // -----------------------------
-    // Build Pronk Mobilize URL
+    // Build Pronk URL
     // -----------------------------
-    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workorder=${WORKORDER_NUMBER}&output=json&callback=pronkexe://result/&autotest=${AUTOTEST}`;
+    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&pdfpath=${PDF_PATH}&autotest=${autotest}`;
+    debugEl.textContent += `\nPronk URL:\n${pronkUrl}\n`;
 
     // -----------------------------
     // Launch function
     // -----------------------------
     function launchPronk() {
       try {
-        console.log("Launching Pronk Mobilize URL:", pronkUrl);
         window.location.href = pronkUrl;
+        debugEl.textContent += "\nAttempting to launch Pronk Mobilize...";
       } catch(e) {
-        console.error("Pronk launch failed:", e);
+        console.error("Launch failed:", e);
+        debugEl.textContent += `\nERROR: Launch failed - ${e}`;
       }
     }
 
@@ -83,6 +92,7 @@
     // Auto-launch on page load
     // -----------------------------
     window.onload = launchPronk;
+
   </script>
 </body>
 </html>
