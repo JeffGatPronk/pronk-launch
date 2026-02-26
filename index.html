@@ -2,25 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+
+  <!-- 🔥 Prevent ALL caching -->
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <title>Pronk Mobilize Launcher</title>
+
+  <script>
+    // Force reload from server if somehow cached
+    if (performance.navigation.type === 1) {
+      location.reload(true);
+    }
+  </script>
+
   <style>
     body { 
       font-family: sans-serif; 
       text-align: center; 
       margin-top: 50px; 
     }
-    #status { 
-      font-size: 18px; 
-      color: #0078D7; 
-    }
   </style>
 </head>
 <body>
   <h2>Launching Pronk Mobilize...</h2>
-  <p id="status">Initializing...</p>
 
   <script>
-    // --- Helper: Get query parameters (supports spaces in names) ---
+    // --- Prevent browser caching this page entirely ---
+    window.onpageshow = function(event) {
+      if (event.persisted) {
+        window.location.reload();
+      }
+    };
+
+    // --- Helper to read TMS parameters ---
     function getParam(name) {
       const q = window.location.search.substring(1);
       const pairs = q.split('&');
@@ -33,57 +49,47 @@
       return null;
     }
 
-    // --- Capture TMS parameters ---
     const WORKORDER_NUMBER = getParam("WO Number") || "";
     const ASSET_NUMBER = getParam("Asset ID") || "";
 
-    console.log("Captured parameters:");
-    console.log("WorkOrder:", WORKORDER_NUMBER);
-    console.log("Asset:", ASSET_NUMBER);
-
-    const status = document.getElementById("status");
-
     if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
-      alert("Missing Asset or Work Order from TMS. Cannot launch.");
-      status.innerText = "Missing parameters. Launch aborted.";
+      alert("Missing Asset or Work Order from TMS.");
       throw new Error("Missing required parameters");
     }
 
-    status.innerText = "Starting Pronk Mobilize...";
-
-    // --- Autotest JSON (your working format) ---
     const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
 
-    // --- Build Pronk URL ---
-    const pronkUrl = `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}&output=json&callback=pronkexe://result/&autotest=${encodeURIComponent(autotest)}`;
+    // Add timestamp to bust cache every time
+    const cacheBuster = Date.now();
 
-    console.log("Launching:", pronkUrl);
+    const pronkUrl =
+      `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}` +
+      `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
+      `&output=json` +
+      `&callback=pronkexe://result/` +
+      `&autotest=${encodeURIComponent(autotest)}` +
+      `&t=${cacheBuster}`;
 
     function launchMobilize() {
-      // Launch Mobilize via hidden iframe
+
       const iframe = document.createElement("iframe");
       iframe.style.display = "none";
       iframe.src = pronkUrl;
       document.body.appendChild(iframe);
 
-      // Remove iframe quickly
       setTimeout(() => {
         document.body.removeChild(iframe);
-      }, 500);
+      }, 400);
 
-      // Close launcher window so next test can start
+      // Close immediately so next test can start
       setTimeout(() => {
         window.open('', '_self');
         window.close();
-        window.location.replace("about:blank"); // fallback
-      }, 800);
+        window.location.replace("about:blank");
+      }, 700);
     }
 
-    // --- Auto launch immediately ---
     window.onload = launchMobilize;
-
   </script>
-</body>
-</html>
 </body>
 </html>
