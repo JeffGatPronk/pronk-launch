@@ -1,71 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Pronk AutoTest Launcher</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding-top: 80px;
-            background-color: #f4f6f8;
-        }
-        .card {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: inline-block;
-        }
-        .success { color: green; }
-        .error { color: red; }
-    </style>
-</head>
-<body>
+<meta charset="utf-8">
+<title>Pronk Mobilize Launcher</title>
+<style>
+body { font-family: sans-serif; text-align: center; margin-top: 50px; } #launchButton {
+    padding: 20px 40px;
+    font-size: 18px;
+    background-color: #0078D7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+#launchButton:hover { background-color: #005a9e; } </style> </head> <body> <h2>Pronk Mobilize Launcher</h2> <p>Click the button below to launch the test in Mobilize:</p>
 
-<div class="card">
-    <h1>Launching Pronk AutoTest...</h1>
-    <div id="status">Initializing...</div>
-</div>
+<button id="launchButton">Launch Pronk Mobilize</button>
 
 <script>
+// -----------------------------
+// Helper: Get TMS parameters robustly
+// -----------------------------
 function getParam(name) {
-    const params = new URLSearchParams(window.location.search);
-    return params.get(name);
+    const query = window.location.search.substring(1);
+    const pairs = query.split('&');
+    for (const pair of pairs) {
+        const [key, ...rest] = pair.split('=');
+        if (decodeURIComponent(key).trim().toLowerCase() === name.trim().toLowerCase()) {
+            return decodeURIComponent(rest.join('=')).trim();
+        }
+    }
+    return null;
 }
 
-// Capture parameters exactly as TMS sends them
-const ASSET_NUMBER = getParam("Asset ID");
-const WORKORDER_NUMBER = getParam("WO Number");
+// -----------------------------
+// Capture WorkOrder and Asset
+// -----------------------------
+const WORKORDER_NUMBER = getParam("WO Number") || getParam("WorkOrderNumber") || ""; const ASSET_NUMBER = getParam("Asset ID") || getParam("AssetID") || "";
 
-console.log("Captured Parameters:");
-console.log("WorkOrder:", WORKORDER_NUMBER);
-console.log("Asset:", ASSET_NUMBER);
+console.log("Captured Parameters:", WORKORDER_NUMBER, ASSET_NUMBER);
 
-const statusDiv = document.getElementById("status");
+if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
+    alert("Missing Asset or Work Order from TMS. Cannot launch.");
+    throw new Error("Missing required parameters."); }
 
-// Validate parameters
-if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
-    statusDiv.innerHTML = "<p class='error'>Missing Asset ID or WO Number from TMS. Launch aborted.</p>";
-} else {
+// -----------------------------
+// Autotest JSON example
+// -----------------------------
+const autotestJSON = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
+const autotestEncoded = encodeURIComponent(autotestJSON);
 
-    statusDiv.innerHTML = `
-        <p class='success'>Asset: ${ASSET_NUMBER}</p>
-        <p class='success'>Work Order: ${WORKORDER_NUMBER}</p>
-        <p>Starting Pronk AutoTest...</p>
-    `;
+// -----------------------------
+// Encode callback URL for Mobilize
+// -----------------------------
+const callbackURL = encodeURIComponent(`pronkexe://result/?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}`);
 
-    // Build Pronk URL (JSON required)
-    const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${encodeURIComponent(ASSET_NUMBER)}&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}`;
+// -----------------------------
+// Build Pronk cheatcode URL
+// -----------------------------
+const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=${callbackURL}&autotest=${autotestEncoded}`;
 
-    console.log("Launching:", pronkUrl);
+console.log("Pronk URL:", pronkUrl);
 
-    // Small delay for UI update before launch
-    setTimeout(() => {
+// -----------------------------
+// Button click launches Mobilize
+// -----------------------------
+document.getElementById('launchButton').onclick = function() {
+    try {
+        // Open in the same window to ensure protocol works
         window.location.href = pronkUrl;
-    }, 1000);
-}
+    } catch(e) {
+        console.error("Failed to launch Pronk:", e);
+        alert("Failed to launch Mobilize. Check browser or registry.");
+    }
+};
 </script>
-
 </body>
 </html>
