@@ -4,29 +4,23 @@
   <meta charset="UTF-8">
   <title>Pronk Mobilize Launcher</title>
   <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    #launchBtn {
-      padding: 20px 40px;
-      font-size: 18px;
-      background-color: #0078D7;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
+    body { 
+      font-family: sans-serif; 
+      text-align: center; 
+      margin-top: 50px; 
     }
-    #launchBtn:hover { background-color: #005a9e; }
-    #fallback { color: red; margin-top: 20px; display: none; }
+    #status { 
+      font-size: 18px; 
+      color: #0078D7; 
+    }
   </style>
 </head>
 <body>
-  <h2>Pronk Mobilize Launcher</h2>
-  <p>Click the button below to launch Pronk Mobilize. Ensure the app is installed.</p>
-
-  <button id="launchBtn">Launch Pronk Mobilize</button>
-  <p id="fallback">Could not launch Mobilize automatically. Please ensure it is installed.</p>
+  <h2>Launching Pronk Mobilize...</h2>
+  <p id="status">Initializing...</p>
 
   <script>
-    // --- Helper: Get query parameters (supports spaces) ---
+    // --- Helper: Get query parameters (supports spaces in names) ---
     function getParam(name) {
       const q = window.location.search.substring(1);
       const pairs = q.split('&');
@@ -47,38 +41,49 @@
     console.log("WorkOrder:", WORKORDER_NUMBER);
     console.log("Asset:", ASSET_NUMBER);
 
+    const status = document.getElementById("status");
+
     if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
       alert("Missing Asset or Work Order from TMS. Cannot launch.");
+      status.innerText = "Missing parameters. Launch aborted.";
       throw new Error("Missing required parameters");
     }
 
-    // --- Autotest JSON (example) ---
+    status.innerText = "Starting Pronk Mobilize...";
+
+    // --- Autotest JSON (your working format) ---
     const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
 
-    // --- Build pronk URL ---
-    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=pronkexe://result/&autotest=${autotest}`;
-    console.log("Pronk URL:", pronkUrl);
+    // --- Build Pronk URL ---
+    const pronkUrl = `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}&output=json&callback=pronkexe://result/&autotest=${encodeURIComponent(autotest)}`;
 
-    // --- Launch Mobilize on button click ---
-    const launchBtn = document.getElementById("launchBtn");
-    const fallback = document.getElementById("fallback");
+    console.log("Launching:", pronkUrl);
 
-    launchBtn.addEventListener("click", function() {
+    function launchMobilize() {
+      // Launch Mobilize via hidden iframe
       const iframe = document.createElement("iframe");
       iframe.style.display = "none";
       iframe.src = pronkUrl;
       document.body.appendChild(iframe);
 
+      // Remove iframe quickly
       setTimeout(() => {
         document.body.removeChild(iframe);
-        fallback.style.display = "block"; // show if Mobilize didn't launch
-      }, 2000);
-    });
+      }, 500);
 
-    // --- Auto-launch on page load ---
-    window.onload = function() {
-      launchBtn.click();
-    };
+      // Close launcher window so next test can start
+      setTimeout(() => {
+        window.open('', '_self');
+        window.close();
+        window.location.replace("about:blank"); // fallback
+      }, 800);
+    }
+
+    // --- Auto launch immediately ---
+    window.onload = launchMobilize;
+
   </script>
+</body>
+</html>
 </body>
 </html>
