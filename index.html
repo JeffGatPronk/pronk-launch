@@ -1,79 +1,98 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="utf-8">
-<title>Pronk Mobilize Launcher</title>
-<style>
-body { font-family: sans-serif; text-align: center; margin-top: 50px; } #launchButton {
-    padding: 20px 40px;
-    font-size: 18px;
-    background-color: #0078D7;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-#launchButton:hover { background-color: #005a9e; } </style> </head> <body> <h2>Pronk Mobilize Launcher</h2> <p>Click the button below to launch the test in Mobilize:</p>
+  <meta charset="utf-8">
+  <title>Pronk Mobilize Launcher</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    #launchButton {
+      padding: 20px 40px;
+      font-size: 18px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #launchButton:hover { background-color: #005a9e; }
+    pre { text-align: left; max-width: 800px; margin: 20px auto; background: #f4f4f4; padding: 10px; border-radius: 5px; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h2>Pronk Mobilize Launcher</h2>
+  <p>If Pronk does not launch automatically, click the button below:</p>
+  <button id="launchButton">Launch Pronk Mobilize</button>
 
-<button id="launchButton">Launch Pronk Mobilize</button>
+  <h3>Debug Info:</h3>
+  <pre id="debug"></pre>
 
-<script>
-// -----------------------------
-// Helper: Get TMS parameters robustly
-// -----------------------------
-function getParam(name) {
-    const query = window.location.search.substring(1);
-    const pairs = query.split('&');
-    for (const pair of pairs) {
+  <script>
+    // -----------------------------
+    // Helper: get query parameter
+    // -----------------------------
+    function getParam(name) {
+      const q = window.location.search.substring(1);
+      const pairs = q.split('&');
+      for (const pair of pairs) {
         const [key, ...rest] = pair.split('=');
-        if (decodeURIComponent(key).trim().toLowerCase() === name.trim().toLowerCase()) {
-            return decodeURIComponent(rest.join('=')).trim();
+        if (decodeURIComponent(key).trim().toLowerCase() === name.toLowerCase()) {
+          return decodeURIComponent(rest.join('=')).trim();
         }
+      }
+      return null;
     }
-    return null;
-}
 
-// -----------------------------
-// Capture WorkOrder and Asset
-// -----------------------------
-const WORKORDER_NUMBER = getParam("WO Number") || getParam("WorkOrderNumber") || ""; const ASSET_NUMBER = getParam("Asset ID") || getParam("AssetID") || "";
+    // -----------------------------
+    // Capture parameters from TMS
+    // -----------------------------
+    const WORKORDER_NUMBER = getParam("WorkOrderNumber") || "";
+    const ASSET_NUMBER     = getParam("AssetID")        || "";
+    const PDF_PATH         = getParam("PDF")            || "";
 
-console.log("Captured Parameters:", WORKORDER_NUMBER, ASSET_NUMBER);
+    const debugEl = document.getElementById("debug");
+    debugEl.textContent = `Captured Parameters:\nWorkOrder: ${WORKORDER_NUMBER}\nAsset: ${ASSET_NUMBER}\nPDF Path: ${PDF_PATH}\n`;
 
-if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
-    alert("Missing Asset or Work Order from TMS. Cannot launch.");
-    throw new Error("Missing required parameters."); }
+    // Validate required parameters
+    if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
+      alert("Missing Asset or Work Order from TMS. Cannot launch.");
+      debugEl.textContent += "\nERROR: Missing required parameters. Launch aborted.";
+      throw new Error("Missing Asset or Work Order from TMS");
+    }
 
-// -----------------------------
-// Autotest JSON example
-// -----------------------------
-const autotestJSON = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
-const autotestEncoded = encodeURIComponent(autotestJSON);
+    // -----------------------------
+    // Build autotest string (example)
+    // -----------------------------
+    const autotest = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
 
-// -----------------------------
-// Encode callback URL for Mobilize
-// -----------------------------
-const callbackURL = encodeURIComponent(`pronkexe://result/?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}`);
+    // -----------------------------
+    // Build Pronk URL
+    // -----------------------------
+    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&pdfpath=${PDF_PATH}&autotest=${autotest}`;
+    debugEl.textContent += `\nPronk URL:\n${pronkUrl}\n`;
 
-// -----------------------------
-// Build Pronk cheatcode URL
-// -----------------------------
-const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=${callbackURL}&autotest=${autotestEncoded}`;
-
-console.log("Pronk URL:", pronkUrl);
-
-// -----------------------------
-// Button click launches Mobilize
-// -----------------------------
-document.getElementById('launchButton').onclick = function() {
-    try {
-        // Open in the same window to ensure protocol works
+    // -----------------------------
+    // Launch function
+    // -----------------------------
+    function launchPronk() {
+      try {
         window.location.href = pronkUrl;
-    } catch(e) {
-        console.error("Failed to launch Pronk:", e);
-        alert("Failed to launch Mobilize. Check browser or registry.");
+        debugEl.textContent += "\nAttempting to launch Pronk Mobilize...";
+      } catch(e) {
+        console.error("Launch failed:", e);
+        debugEl.textContent += `\nERROR: Launch failed - ${e}`;
+      }
     }
-};
-</script>
+
+    // -----------------------------
+    // Bind button
+    // -----------------------------
+    document.getElementById('launchButton').onclick = launchPronk;
+
+    // -----------------------------
+    // Auto-launch on page load
+    // -----------------------------
+    window.onload = launchPronk;
+
+  </script>
 </body>
 </html>
