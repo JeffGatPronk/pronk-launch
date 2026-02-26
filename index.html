@@ -26,28 +26,26 @@
   <h3>Debug Info:</h3>
   <pre id="debug"></pre>
 
-  <script>
-    // -----------------------------
-    // Helper: get query parameter
-    // -----------------------------
-    function getParam(name) {
-      const q = window.location.search.substring(1);
-      const pairs = q.split('&');
-      for (const pair of pairs) {
-        const [key, ...rest] = pair.split('=');
-        if (decodeURIComponent(key).trim().toLowerCase() === name.toLowerCase()) {
-          return decodeURIComponent(rest.join('=')).trim();
-        }
-      }
-      return null;
-    }
+ <script>
+function getParam(name) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
+}
 
-    // -----------------------------
-    // Capture parameters from TMS
-    // -----------------------------
-    const WORKORDER_NUMBER = getParam("WorkOrderNumber") || "";
-    const ASSET_NUMBER     = getParam("AssetID")        || "";
-    const PDF_PATH         = getParam("PDF")            || "";
+const ASSET_NUMBER = getParam("Asset ID");
+const WORKORDER_NUMBER = getParam("WO Number");
+
+console.log("Captured Parameters:");
+console.log("WorkOrder:", WORKORDER_NUMBER);
+console.log("Asset:", ASSET_NUMBER);
+
+if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
+    document.body.innerHTML += "<h2 style='color:red'>Missing Asset or Work Order from TMS. Cannot launch.</h2>";
+} else {
+    // Redirect to your actual launcher page
+    window.location.href = `launcher.html?AssetID=${encodeURIComponent(ASSET_NUMBER)}&WorkOrderNumber=${encodeURIComponent(WORKORDER_NUMBER)}`;
+}
+
 
     const debugEl = document.getElementById("debug");
     debugEl.textContent = `Captured Parameters:\nWorkOrder: ${WORKORDER_NUMBER}\nAsset: ${ASSET_NUMBER}\nPDF Path: ${PDF_PATH}\n`;
