@@ -1,79 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="utf-8">
-<title>Pronk Mobilize Launcher</title>
-<style>
-body { font-family: sans-serif; text-align: center; margin-top: 50px; } #launchButton {
-    padding: 20px 40px;
-    font-size: 18px;
-    background-color: #0078D7;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-#launchButton:hover { background-color: #005a9e; } </style> </head> <body> <h2>Pronk Mobilize Launcher</h2> <p>Click the button below to launch the test in Mobilize:</p>
-
-<button id="launchButton">Launch Pronk Mobilize</button>
-
-<script>
-// -----------------------------
-// Helper: Get TMS parameters robustly
-// -----------------------------
-//function getParam(name) {
-  //  const query = window.location.search.substring(1);
-   // const pairs = query.split('&');
-  //  for (const pair of pairs) {
-     //   const [key, ...rest] = pair.split('=');
-     //   if (decodeURIComponent(key).trim().toLowerCase() === name.trim().toLowerCase()) {
-     //       return decodeURIComponent(rest.join('=')).trim();
-    //    }
-   // }
-  //  return null;
-//}
-
-// -----------------------------
-// Capture WorkOrder and Asset
-// -----------------------------
-//const WORKORDER_NUMBER = getParam("WO Number") || getParam("WorkOrderNumber") || ""; const ASSET_NUMBER = getParam("Asset ID") || getParam("AssetID") || "";
-
-//console.log("Captured Parameters:", WORKORDER_NUMBER, ASSET_NUMBER);
-
-//if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
-//    alert("Missing Asset or Work Order from TMS. Cannot launch.");
- //   throw new Error("Missing required parameters."); }
-
-// -----------------------------
-// Autotest JSON example
-// -----------------------------
-//const autotestJSON = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
-//const autotestEncoded = encodeURIComponent(autotestJSON);
-
-// -----------------------------
-// Encode callback URL for Mobilize
-// -----------------------------
-//const callbackURL = encodeURIComponent(`pronkexe://result/?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}`);
-
-// -----------------------------
-// Build Pronk cheatcode URL
-// -----------------------------
-const pronkUrl = `pronk://devtype?asset=t1234&output=json&callback=Openerapp%3A%2F%2Fresult%2F&autotest={"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}`;
-
-console.log("Pronk URL:", pronkUrl);
-
-// -----------------------------
-// Button click launches Mobilize
-// -----------------------------
-document.getElementById('launchButton').onclick = function() {
-    try {
-        // Open in the same window to ensure protocol works
-        window.location.href = pronkUrl;
-    } catch(e) {
-        console.error("Failed to launch Pronk:", e);
-        alert("Failed to launch Mobilize. Check browser or registry.");
+  <meta charset="utf-8">
+  <title>Pronk Mobilize Launcher</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    #launchButton {
+      padding: 20px 40px;
+      font-size: 18px;
+      background-color: #0078D7;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
     }
-};
-</script>
+    #launchButton:hover { background-color: #005a9e; }
+  </style>
+</head>
+<body>
+  <h2>Pronk Mobilize Launcher</h2>
+  <p>The test should launch automatically. If not, click the button below:</p>
+
+  <button id="launchButton">Launch Pronk Mobilize</button>
+
+  <script>
+    // -----------------------------
+    // Helper: parse query string
+    // -----------------------------
+    function getParam(name) {
+      const q = window.location.search.substring(1);
+      const pairs = q.split('&');
+      for (const pair of pairs) {
+        const [key, ...rest] = pair.split('=');
+        if (decodeURIComponent(key).trim() === name) {
+          return decodeURIComponent(rest.join('=')).trim();
+        }
+      }
+      return null;
+    }
+
+    // -----------------------------
+    // Get TMS parameters (required)
+    // -----------------------------
+    const WORKORDER_NUMBER = getParam("WorkOrderNumber");
+    const ASSET_NUMBER = getParam("AssetID");
+    const PDF_URL = getParam("PDF"); // optional if you want pre-selected PDF
+
+    if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
+      alert("ERROR: Missing required TMS parameters (WorkOrderNumber or AssetID).");
+      console.error("Missing WorkOrderNumber or AssetID in query parameters.");
+      throw new Error("Missing required TMS parameters.");
+    }
+
+    // -----------------------------
+    // Autotest JSON (example)
+    // -----------------------------
+    const AUTOTEST = '{"NFPA992012APwGND","2sec,Rpt,PwrEnd,A","GndRes,500","NP:CL:NC,100","NP:CL:OG,500","NP:LLG:NC,100","NP:LLG:OG,500"}';
+
+    // -----------------------------
+    // Build Pronk Mobilize URL
+    // -----------------------------
+    const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workorder=${WORKORDER_NUMBER}&output=json&autotest=${AUTOTEST}`;
+
+    // -----------------------------
+    // Launch function
+    // -----------------------------
+    function launchPronk() {
+      try {
+        console.log("Launching Pronk Mobilize URL:", pronkUrl);
+        window.location.href = pronkUrl;
+      } catch(e) {
+        console.error("Pronk launch failed:", e);
+      }
+    }
+
+    // -----------------------------
+    // Bind button
+    // -----------------------------
+    document.getElementById('launchButton').onclick = launchPronk;
+
+    // -----------------------------
+    // Auto-launch on page load
+    // -----------------------------
+    window.onload = launchPronk;
+  </script>
 </body>
 </html>
