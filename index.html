@@ -62,11 +62,11 @@ if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
 // Encode callback URL for Mobilize
 // -----------------------------
 const callbackURL = encodeURIComponent(`pronkexe%3A%2F%2Fresult%2F`);
-
+const pronkURLadd = encodeURIComponent(`asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}`);
 // -----------------------------
 // Build Pronk cheatcode URL
 // -----------------------------
-const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&callback=${callbackURL}`;
+const pronkUrl = `pronk://cheatcode?cheatvar1=open&callback=${callbackURL}`;
 
 
 
