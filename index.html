@@ -21,39 +21,39 @@ body { font-family: sans-serif; text-align: center; margin-top: 50px; } #launchB
 // -----------------------------
 // Helper: Get TMS parameters robustly
 // -----------------------------
-function getParam(name) {
-    const query = window.location.search.substring(1);
-    const pairs = query.split('&');
-    for (const pair of pairs) {
-        const [key, ...rest] = pair.split('=');
-        if (decodeURIComponent(key).trim().toLowerCase() === name.trim().toLowerCase()) {
-            return decodeURIComponent(rest.join('=')).trim();
-        }
-    }
-    return null;
-}
+//function getParam(name) {
+  //  const query = window.location.search.substring(1);
+   // const pairs = query.split('&');
+  //  for (const pair of pairs) {
+     //   const [key, ...rest] = pair.split('=');
+     //   if (decodeURIComponent(key).trim().toLowerCase() === name.trim().toLowerCase()) {
+     //       return decodeURIComponent(rest.join('=')).trim();
+    //    }
+   // }
+  //  return null;
+//}
 
 // -----------------------------
 // Capture WorkOrder and Asset
 // -----------------------------
-const WORKORDER_NUMBER = getParam("WO Number") || getParam("WorkOrderNumber") || ""; const ASSET_NUMBER = getParam("Asset ID") || getParam("AssetID") || "";
+//const WORKORDER_NUMBER = getParam("WO Number") || getParam("WorkOrderNumber") || ""; const ASSET_NUMBER = getParam("Asset ID") || getParam("AssetID") || "";
 
-console.log("Captured Parameters:", WORKORDER_NUMBER, ASSET_NUMBER);
+//console.log("Captured Parameters:", WORKORDER_NUMBER, ASSET_NUMBER);
 
-if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
-    alert("Missing Asset or Work Order from TMS. Cannot launch.");
-    throw new Error("Missing required parameters."); }
+//if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
+//    alert("Missing Asset or Work Order from TMS. Cannot launch.");
+ //   throw new Error("Missing required parameters."); }
 
 // -----------------------------
 // Autotest JSON example
 // -----------------------------
-const autotestJSON = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
-const autotestEncoded = encodeURIComponent(autotestJSON);
+//const autotestJSON = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100"}';
+//const autotestEncoded = encodeURIComponent(autotestJSON);
 
 // -----------------------------
 // Encode callback URL for Mobilize
 // -----------------------------
-const callbackURL = encodeURIComponent(`pronkexe://result/?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}`);
+//const callbackURL = encodeURIComponent(`pronkexe://result/?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}`);
 
 // -----------------------------
 // Build Pronk cheatcode URL
