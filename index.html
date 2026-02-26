@@ -56,7 +56,7 @@ if (!ASSET_NUMBER || !WORKORDER_NUMBER) {
     `;
 
     // Build Pronk URL (JSON required)
-    const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${encodeURIComponent(ASSET_NUMBER)}&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}&callback=${callbackURL}`;
+    const pronkUrl = `pronk://cheatcode?cheatvar1=open&asset=${encodeURIComponent(ASSET_NUMBER)}&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}`;
 
     console.log("Launching:", pronkUrl);
 
