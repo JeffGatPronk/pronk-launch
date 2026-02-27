@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
 
-  <!-- Prevent browser caching -->
+  <!-- Prevent caching -->
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <title>Pronk Mobilize Launcher</title>
+  <title>Mobilize Launcher</title>
 
   <style>
     body {
@@ -23,72 +23,84 @@
   <h2>Launching Mobilize Test...</h2>
   <p id="status">Preparing test...</p>
 
-  <script>
-    // ------------------------------------------
-    // Helper: Get Query Parameter From TMS
-    // ------------------------------------------
-    function getParam(name) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(name);
-    }
+  <!-- Hidden launcher anchor -->
+  <a id="protocolLauncher" style="display:none;"></a>
 
-    // ------------------------------------------
-    // Get Values Passed From TMS
-    // ------------------------------------------
-    const WORKORDER_NUMBER = getParam("WO Number");
-    const ASSET_NUMBER = getParam("Asset ID");
+<script>
 
-    if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
-      document.getElementById("status").innerText =
-        "Missing Work Order or Asset from TMS.";
-      throw new Error("Missing required parameters from TMS");
-    }
+  // ------------------------------
+  // Get Query Parameters From TMS
+  // ------------------------------
+  function getParam(name) {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(name);
+  }
 
-    // ------------------------------------------
-    // Autotest Definition (your required format)
-    // ------------------------------------------
-    const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
+  const WORKORDER_NUMBER = getParam("WO Number");
+  const ASSET_NUMBER = getParam("Asset ID");
 
-    // ------------------------------------------
-    // Build Callback WITH Parameters
-    // ------------------------------------------
-    const rawCallback =
-      `Openerapp://result/?wo=${encodeURIComponent(WORKORDER_NUMBER)}` +
-      `&asset=${encodeURIComponent(ASSET_NUMBER)}`;
+  if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
+    document.getElementById("status").innerText =
+      "Missing Work Order or Asset parameter from TMS.";
+    throw new Error("Required parameters missing.");
+  }
 
-    const encodedCallback = encodeURIComponent(rawCallback);
+  // ------------------------------
+  // Define Autotest
+  // ------------------------------
+  const autotest =
+    '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
 
-    // ------------------------------------------
-    // Build Final Pronk URL
-    // ------------------------------------------
-    const pronkUrl =
-      `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}` +
-      `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
-      `&callback=${encodedCallback}` +
-      `&autotest=${encodeURIComponent(autotest)}` +
-      `&t=${Date.now()}`;
+  // ------------------------------
+  // Build Callback With Parameters
+  // ------------------------------
+  const rawCallback =
+    `Openerapp://result/?wo=${encodeURIComponent(WORKORDER_NUMBER)}` +
+    `&asset=${encodeURIComponent(ASSET_NUMBER)}`;
 
-    // ------------------------------------------
-    // Launch Mobilize
-    // ------------------------------------------
-    function launchMobilize() {
-      document.getElementById("status").innerText =
-        "Opening Mobilize...";
+  const encodedCallback = encodeURIComponent(rawCallback);
 
-      // Direct protocol navigation (most reliable)
-      window.location.href = pronkUrl;
+  // ------------------------------
+  // Build Final Pronk URL
+  // ------------------------------
+  const pronkUrl =
+    `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}` +
+    `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
+    `&output=json` +
+    `&callback=${encodedCallback}` +
+    `&autotest=${encodeURIComponent(autotest)}` +
+    `&t=${Date.now()}`;
 
-      // Auto close launcher window
-      setTimeout(() => {
-        window.open('', '_self');
-        window.close();
-      }, 800);
-    }
+  // ------------------------------
+  // Launch Mobilize
+  // ------------------------------
+  function launchMobilize() {
 
-    // Launch automatically when page loads
-    window.onload = launchMobilize;
+    document.getElementById("status").innerText =
+      "Opening Mobilize...";
 
-  </script>
+    const launcher = document.getElementById("protocolLauncher");
+    launcher.href = pronkUrl;
+
+    // Trigger via anchor click (most consistent)
+    launcher.click();
+
+    // Close launcher window AFTER delay
+    // (Do NOT close immediately or Windows may block protocol)
+    setTimeout(function () {
+      window.open('', '_self');
+      window.close();
+    }, 3000);
+  }
+
+  // ------------------------------
+  // Auto Launch On Load
+  // ------------------------------
+  window.onload = function () {
+    launchMobilize();
+  };
+
+</script>
 
 </body>
 </html>
