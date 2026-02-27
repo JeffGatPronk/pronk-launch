@@ -88,9 +88,8 @@
   function buildPronkUrl() {
     return `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}` +
            `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
-           `&output=json` +
-           `&autotest=${encodeURIComponent(autotest)}` 
-           
+           `&output=json` +                       // Correct parameter
+           `&autotest=${encodeURIComponent(autotest)}`;
   }
 
   // ------------------------------
@@ -115,12 +114,10 @@
   // Run EXE button click
   // ------------------------------
   runExeBtn.addEventListener("click", () => {
-    // This will attempt to launch your EXE via Windows protocol (or file handler)
-    // The EXE must be registered to handle this URL or be in PATH
     const exePath = "C:\\Users\\Jeff Goldstein\\Desktop\\dist\\pronk_uploader.exe";
     alert(`Please run the EXE manually: ${exePath}`);
-    // Optional: If you registered a custom protocol, you could launch via protocol instead
-    // window.location.href = "pronkexe://launch"; // example if registered
+    // If you register a custom protocol for your EXE, you could do:
+    // window.location.href = "pronkexe://launch";
   });
 
   // ------------------------------
