@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
 
-  <!-- Prevent browser caching -->
+  <!-- Prevent caching -->
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -14,87 +14,120 @@
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      margin-top: 60px;
+      margin-top: 50px;
     }
+    #status {
+      font-weight: bold;
+      margin: 20px 0;
+    }
+    #details {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    #runExeBtn {
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      background-color: #0078D7;
+      color: white;
+      cursor: pointer;
+      margin-top: 20px;
+      display: none;
+    }
+    #runExeBtn:hover { background-color: #005a9e; }
   </style>
 </head>
 <body>
 
 <h2>Launching Mobilize Test...</h2>
 <p id="status">Preparing test...</p>
+<div id="details"></div>
+<button id="runExeBtn">Run Pronk Uploader</button>
 
-<!-- Hidden anchor for protocol launch -->
+<!-- Hidden anchor for protocol -->
 <a id="protocolLauncher" style="display:none;"></a>
 
 <script>
-  // ------------------------------------------
-  // Helper: Get query parameters from TMS
-  // ------------------------------------------
+  // ------------------------------
+  // Helper: Get query parameter
+  // ------------------------------
   function getParam(name) {
     const params = new URLSearchParams(window.location.search);
     return params.get(name);
   }
 
-  // ------------------------------------------
+  // ------------------------------
   // Capture WorkOrder and Asset
-  // ------------------------------------------
+  // ------------------------------
   const WORKORDER_NUMBER = getParam("WO Number");
   const ASSET_NUMBER = getParam("Asset ID");
 
+  const statusEl = document.getElementById("status");
+  const detailsEl = document.getElementById("details");
+  const runExeBtn = document.getElementById("runExeBtn");
+
   if (!WORKORDER_NUMBER || !ASSET_NUMBER) {
-    document.getElementById("status").innerText =
-      "Missing Work Order or Asset parameter from TMS.";
+    statusEl.innerText = "Missing Work Order or Asset parameter from TMS.";
     throw new Error("Required parameters missing.");
   }
 
-  // ------------------------------------------
+  detailsEl.innerHTML = `
+    Work Order: <strong>${WORKORDER_NUMBER}</strong><br>
+    Asset ID: <strong>${ASSET_NUMBER}</strong>
+  `;
+
+  // ------------------------------
   // Autotest JSON
-  // ------------------------------------------
+  // ------------------------------
   const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
 
-  // ------------------------------------------
-  // Build callback URL with parameters
-  // ------------------------------------------
-  const rawCallback =
-    `Openerapp://result/?wo=${encodeURIComponent(WORKORDER_NUMBER)}` +
-    `&asset=${encodeURIComponent(ASSET_NUMBER)}`;
-
-  const encodedCallback = encodeURIComponent(rawCallback);
-
-  // ------------------------------------------
-  // Build final Pronk URL (correct 'out=json')
-  // ------------------------------------------
-  const pronkUrl =
-    `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}` +
-    `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
-    `&out=json` +                            // <<< Correct parameter
-    `&callback=${encodedCallback}` +
-    `&autotest=${encodeURIComponent(autotest)}` +
-    `&t=${Date.now()}`;                      // Cache-buster
-
-  // ------------------------------------------
-  // Launch Mobilize
-  // ------------------------------------------
-  function launchMobilize() {
-    document.getElementById("status").innerText = "Opening Mobilize...";
-
-    const launcher = document.getElementById("protocolLauncher");
-    launcher.href = pronkUrl;
-
-    // Trigger via anchor click (most reliable across browsers)
-    launcher.click();
-
-    // Auto-close the launcher window after a short delay
-    setTimeout(() => {
-      window.open('', '_self');
-      window.close();
-    }, 3000);
+  // ------------------------------
+  // Build final Pronk URL
+  // ------------------------------
+  function buildPronkUrl() {
+    return `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}` +
+           `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
+           `&out=json` +
+           `&autotest=${encodeURIComponent(autotest)}` +
+           `&t=${Date.now()}&rand=${Math.random()}`;
   }
 
-  // ------------------------------------------
+  // ------------------------------
+  // Launch Mobilize function
+  // ------------------------------
+  function launchMobilize() {
+    statusEl.innerText = "Opening Mobilize...";
+    runExeBtn.style.display = "none";
+
+    const launcher = document.getElementById("protocolLauncher");
+    launcher.href = buildPronkUrl();
+    launcher.click();
+
+    // Show button to run EXE after short delay
+    setTimeout(() => {
+      runExeBtn.style.display = "inline-block";
+      statusEl.innerText = "Mobilize launched. Click 'Run Pronk Uploader' after test completes.";
+    }, 2000);
+  }
+
+  // ------------------------------
+  // Run EXE button click
+  // ------------------------------
+  runExeBtn.addEventListener("click", () => {
+    // This will attempt to launch your EXE via Windows protocol (or file handler)
+    // The EXE must be registered to handle this URL or be in PATH
+    const exePath = "C:\\Users\\Jeff Goldstein\\Desktop\\dist\\pronk_uploader.exe";
+    alert(`Please run the EXE manually: ${exePath}`);
+    // Optional: If you registered a custom protocol, you could launch via protocol instead
+    // window.location.href = "pronkexe://launch"; // example if registered
+  });
+
+  // ------------------------------
   // Auto launch on page load
-  // ------------------------------------------
+  // ------------------------------
   window.onload = launchMobilize;
+
 </script>
 
 </body>
