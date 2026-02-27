@@ -83,12 +83,12 @@
   const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
 
   // ------------------------------
-  // Build final Pronk URL
+  // Build final Pronk URL for Mobilize
   // ------------------------------
   function buildPronkUrl() {
     return `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}` +
            `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
-           `&output=json` +                       // Correct parameter
+           `&output=json` +
            `&autotest=${encodeURIComponent(autotest)}`;
   }
 
@@ -103,25 +103,23 @@
     launcher.href = buildPronkUrl();
     launcher.click();
 
-    // Show button to run EXE after short delay
+    // Show EXE button after short delay
     setTimeout(() => {
       runExeBtn.style.display = "inline-block";
-      statusEl.innerText = "Mobilize launched. Click 'Run Pronk Uploader' after test completes.";
+      statusEl.innerText = "Mobilize launched. Click 'Run Pronk Uploader' to send results to TMS.";
     }, 2000);
   }
 
   // ------------------------------
-  // Run EXE button click
+  // Run EXE via custom protocol
   // ------------------------------
   runExeBtn.addEventListener("click", () => {
-    const exePath = "C:\\Users\\Jeff Goldstein\\Desktop\\dist\\pronk_uploader.exe";
-    alert(`Please run the EXE manually: ${exePath}`);
-    // If you register a custom protocol for your EXE, you could do:
-    // window.location.href = "pronkexe://launch";
+    const exeUrl = `pronkexe://launch?asset=${encodeURIComponent(ASSET_NUMBER)}&wo=${encodeURIComponent(WORKORDER_NUMBER)}`;
+    window.location.href = exeUrl;
   });
 
   // ------------------------------
-  // Auto launch on page load
+  // Auto-launch on page load
   // ------------------------------
   window.onload = launchMobilize;
 
