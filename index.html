@@ -63,12 +63,10 @@
   // ------------------------------
   // Build Final Pronk URL
   // ------------------------------
-  const pronkUrl =
-    `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}` +
-    `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
-    `&output=json` +
-    `&callback=${encodedCallback}` +
-    `&autotest=${encodeURIComponent(autotest)}` 
+
+  const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=${encodedCallback}&autotest=${encodeURIComponent(autotest)}`;
+
+
    
 
   // ------------------------------
