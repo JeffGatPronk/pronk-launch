@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
 
-  <!-- Prevent caching -->
+  <!-- Prevent browser caching -->
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <title>Mobilize Launcher</title>
+  <title>Pronk Mobilize Launcher</title>
 
   <style>
     body {
@@ -20,22 +20,24 @@
 </head>
 <body>
 
-  <h2>Launching Mobilize Test...</h2>
-  <p id="status">Preparing test...</p>
+<h2>Launching Mobilize Test...</h2>
+<p id="status">Preparing test...</p>
 
-  <!-- Hidden launcher anchor -->
-  <a id="protocolLauncher" style="display:none;"></a>
+<!-- Hidden anchor for protocol launch -->
+<a id="protocolLauncher" style="display:none;"></a>
 
 <script>
-
-  // ------------------------------
-  // Get Query Parameters From TMS
-  // ------------------------------
+  // ------------------------------------------
+  // Helper: Get query parameters from TMS
+  // ------------------------------------------
   function getParam(name) {
     const params = new URLSearchParams(window.location.search);
     return params.get(name);
   }
 
+  // ------------------------------------------
+  // Capture WorkOrder and Asset
+  // ------------------------------------------
   const WORKORDER_NUMBER = getParam("WO Number");
   const ASSET_NUMBER = getParam("Asset ID");
 
@@ -45,59 +47,54 @@
     throw new Error("Required parameters missing.");
   }
 
-  // ------------------------------
-  // Define Autotest
-  // ------------------------------
-  const autotest =
-    '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
+  // ------------------------------------------
+  // Autotest JSON
+  // ------------------------------------------
+  const autotest = '{"NFPA992012NOGND","2sec,Rpt,PwrEnd,A","NP:CL:NC,100","NP:CL:OG,500"}';
 
-  // ------------------------------
-  // Build Callback With Parameters
-  // ------------------------------
+  // ------------------------------------------
+  // Build callback URL with parameters
+  // ------------------------------------------
   const rawCallback =
     `Openerapp://result/?wo=${encodeURIComponent(WORKORDER_NUMBER)}` +
     `&asset=${encodeURIComponent(ASSET_NUMBER)}`;
 
   const encodedCallback = encodeURIComponent(rawCallback);
 
-  // ------------------------------
-  // Build Final Pronk URL
-  // ------------------------------
+  // ------------------------------------------
+  // Build final Pronk URL (correct 'out=json')
+  // ------------------------------------------
+  const pronkUrl =
+    `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}` +
+    `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
+    `&out=json` +                            // <<< Correct parameter
+    `&callback=${encodedCallback}` +
+    `&autotest=${encodeURIComponent(autotest)}` +
+    `&t=${Date.now()}`;                      // Cache-buster
 
-  const pronkUrl = `pronk://devtype?asset=${ASSET_NUMBER}&workOrder=${WORKORDER_NUMBER}&output=json&callback=${encodedCallback}&autotest=${encodeURIComponent(autotest)}`;
-
-
-   
-
-  // ------------------------------
+  // ------------------------------------------
   // Launch Mobilize
-  // ------------------------------
+  // ------------------------------------------
   function launchMobilize() {
-
-    document.getElementById("status").innerText =
-      "Opening Mobilize...";
+    document.getElementById("status").innerText = "Opening Mobilize...";
 
     const launcher = document.getElementById("protocolLauncher");
     launcher.href = pronkUrl;
 
-    // Trigger via anchor click (most consistent)
+    // Trigger via anchor click (most reliable across browsers)
     launcher.click();
 
-    // Close launcher window AFTER delay
-    // (Do NOT close immediately or Windows may block protocol)
-    setTimeout(function () {
+    // Auto-close the launcher window after a short delay
+    setTimeout(() => {
       window.open('', '_self');
       window.close();
     }, 3000);
   }
 
-  // ------------------------------
-  // Auto Launch On Load
-  // ------------------------------
-  window.onload = function () {
-    launchMobilize();
-  };
-
+  // ------------------------------------------
+  // Auto launch on page load
+  // ------------------------------------------
+  window.onload = launchMobilize;
 </script>
 
 </body>
