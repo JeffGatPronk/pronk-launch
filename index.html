@@ -88,7 +88,7 @@
   function buildPronkUrl() {
     return `pronk://devtype?asset=${encodeURIComponent(ASSET_NUMBER)}` +
            `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
-           `&out=json` +
+           `&output=json` +
            `&autotest=${encodeURIComponent(autotest)}` +
            `&t=${Date.now()}&rand=${Math.random()}`;
   }
