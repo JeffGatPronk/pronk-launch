@@ -86,8 +86,7 @@
   // Build final Pronk URL for Mobilize
   // ------------------------------
   function buildPronkUrl() {
-    return `pronk://cheatcode?cheatvar1=open'+
-           '&asset=${encodeURIComponent(ASSET_NUMBER)}` +
+    return `pronk://devtype?&asset=${encodeURIComponent(ASSET_NUMBER)}` +
            `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
            `&output=json` +
            `&autotest=${encodeURIComponent(autotest)}`;
