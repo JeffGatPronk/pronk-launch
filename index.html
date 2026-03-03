@@ -86,9 +86,10 @@
   // Build final Pronk URL for Mobilize
   // ------------------------------
   function buildPronkUrl() {
-    return `pronk://cheatcode?cheatvar1=open&callback=Openerapp%3A%2F%2FClip&post=clipboard&asset=${encodeURIComponent(ASSET_NUMBER)}` +
+    return `pronk://cheatcode?cheatvar1=open&asset=${encodeURIComponent(ASSET_NUMBER)}` +
            `&workOrder=${encodeURIComponent(WORKORDER_NUMBER)}` +
            `&output=text` +
+           '&callback=Openerapp%3A%2F%2FClip&post=clipboard';
            //`&autotest=${encodeURIComponent(autotest)}`;
   }
 
